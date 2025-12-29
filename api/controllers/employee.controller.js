@@ -33,9 +33,9 @@ export const updateEmployee = async (req, res, next) => {
     if (req.body.username !== req.body.username.toLowerCase()) {
       return next(errorHandler(400, 'Username must be lowercase'));
     }
-    if (!req.body.username.match(/^[a-zA-Z0-9]+$/)) {
+    if (!req.body.username.match(/^[a-zA-Z0-9_ ]+$/)) {
       return next(
-        errorHandler(400, 'Username can only contain letters and numbers')
+        errorHandler(400, 'Username can only contain letters, numbers, spaces, and underscores')
       );
     }
   }

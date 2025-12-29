@@ -7,7 +7,7 @@ export const create = async (req, res, next) => {
 
   const nicRegex = /^(?:[0-9]{9}[VvXx]||[0-9]{12})$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^[0-9]{10}$/;
+  const phoneRegex = /^[0-9]{11}$/;
 
   if (
     !firstname ||
@@ -40,7 +40,7 @@ export const create = async (req, res, next) => {
 
   // Check phone number validity
   if (!phoneRegex.test(phone)) {
-    return next(errorHandler(400, "Phone number is invalid"));
+    return next(errorHandler(400, "Phone number must be exactly 11 digits"));
   }
 
    // Check if data already exists in the database

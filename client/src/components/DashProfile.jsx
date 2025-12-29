@@ -102,6 +102,26 @@ export default function DashProfile() {
       setUpdateUserError("Please wait for image to upload");
       return;
     }
+
+    // Validation checks
+    if (formData.username !== undefined) {
+        if (formData.username.trim() === "") {
+             setUpdateUserError("Username cannot be empty");
+             return;
+        }
+        if (!/^[a-zA-Z0-9_ ]+$/.test(formData.username)) {
+            setUpdateUserError("Username must contain only letters, numbers, spaces, and underscores");
+            return;
+        }
+    }
+
+    if (formData.phone !== undefined) {
+         if (!/^\d{11}$/.test(formData.phone)) {
+             setUpdateUserError("Phone number must be exactly 11 digits");
+             return;
+         }
+    }
+
     try {
       dispatch(updateStart());
       const res = await fetch(`/api/employee/update/${currentUser._id}`, {

@@ -14,8 +14,8 @@ if (req.user.id !== req.params.userId){
  // Validate contactNumber
  if (req.body.contactNumber) {
   const contactNumber = req.body.contactNumber;
-  if (!/^\d{1,10}$/.test(contactNumber)) {
-    return next(errorHandler(400, 'Contact number must contain only digits and have a maximum length of 10'));
+  if (!/^\d{11}$/.test(contactNumber)) {
+    return next(errorHandler(400, 'Contact number must contain exactly 11 digits'));
   }
 }
 
@@ -36,9 +36,9 @@ if (req.body.username) {
   if (req.body.username !== req.body.username.toLowerCase()) {
     return next(errorHandler(400, 'Username must be lowercase'));
   }
-  if (!req.body.username.match(/^[a-zA-Z0-9]+$/)) {
+  if (!req.body.username.match(/^[a-zA-Z0-9_ ]+$/)) {
     return next(
-      errorHandler(400, 'Username can only contain letters and numbers')
+      errorHandler(400, 'Username can only contain letters, numbers, spaces, and underscores')
     );
   }
 }

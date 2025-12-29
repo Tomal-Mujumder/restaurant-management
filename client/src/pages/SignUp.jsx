@@ -33,8 +33,8 @@ export default function SignUp() {
       return setErrorMessage('Username must be lowercase.');
     }
 
-    if (!formData.username.match(/^[a-zA-Z0-9]+$/)) {
-      return setErrorMessage('Username can only contain letters and numbers.');
+    if (!formData.username.match(/^[a-zA-Z0-9_]+$/)) {
+      return setErrorMessage('Username can only contain letters, numbers, and underscores.');
     }
 
     // Email validation

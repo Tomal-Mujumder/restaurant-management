@@ -63,18 +63,7 @@ export default function DashSideBar() {
         <Sidebar className='w-full text-gray-200' style={sidebarStyle}>
           <Sidebar.Items>
             <Sidebar.ItemGroup className='flex flex-col gap-1'>
-              <Link to='/dashboard?tab=profile'>
-                <Sidebar.Item
-                  active={tab === 'profile'}
-                  label={currentUser ? (currentUser.isAdmin ? 'Admin' : 'User') : 'User'} // Check if currentUser exists
-                  labelColor='dark'
-                  as='div'
-                  className={`hover:bg-gray-700 ${tab === 'profile' ? 'bg-gray-800' : ''}`}
-                  style={itemStyle}
-                >
-                  Profile
-                </Sidebar.Item>
-              </Link>
+
 
               {currentUser?.isAdmin && ( // Ensure currentUser is defined before checking isAdmin
                 <Link to='/dashboard?tab=users'>
@@ -90,13 +79,7 @@ export default function DashSideBar() {
                 </Link>
               )}
 
-              <Sidebar.Item
-                className='cursor-pointer hover:bg-red-700'
-                onClick={handleSignout}
-                style={{...itemStyle, '&:hover': { backgroundColor: '#8B0000' }}}
-              >
-                Sign Out
-              </Sidebar.Item>
+
             </Sidebar.ItemGroup>
           </Sidebar.Items>
         </Sidebar>
