@@ -62,7 +62,7 @@ export default function Header() {
             <div className="flex items-center justify-between p-6 mx-auto max-w-7xl">
                 <Link to="/" className="flex items-center gap-2">
                     <img src={logo} alt="Banglar Heshel Logo" className="w-16 h-16 rounded-full object-cover" />
-                    <span className="self-center text-xl font-semibold whitespace-nowrap text-[#D4D4D4] font-serif">Banglar Heshel</span>
+                    <span className="self-center text-6xl whitespace-nowrap text-[#D4D4D4] font-['Italianno'] tracking-wider">Banglar Heshel</span>
                 </Link>
                 
 
