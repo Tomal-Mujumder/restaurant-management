@@ -41,5 +41,28 @@ https://github.com/user-attachments/assets/6f0e6244-15fc-4bc8-b58d-49248d2b5cdd
 
 
  </center>
+
+<h3>Installation & Setup (Run on another machine):</h3>
+<ol>
+  <li><strong>Clone the repository</strong> and ensure you have Node.js installed.</li>
+  <li><strong>Backend Setup (.env):</strong>
+    <ul>
+      <li>Navigate to `api/` folder.</li>
+      <li>Create a file named `.env`.</li>
+      <li>Copy content from `.env.example` and fill in your MongoDB URI and JWT Secret.</li>
+      <li>Run `npm install` and `npm start`.</li>
+    </ul>
+  </li>
+  <li><strong>Frontend Setup (.env):</strong>
+    <ul>
+      <li>Navigate to `client/` folder.</li>
+      <li>Create a file named `.env`.</li>
+      <li>Copy content from `.env.example` and fill in your Firebase API Key.</li>
+      <li>Run `npm install` and `npm run dev`.</li>
+    </ul>
+  </li>
+  <li><strong>Images & Assets:</strong> All logos and images are typically stored in `client/src/assets` and are part of the repository, so they will move with the project.</li>
+</ol>
+
 <h3>License:</h3> <p>This project is licensed under the <strong>MIT License</strong>. See the <code>LICENSE</code> file for details.</p>
 # restaurant-management-system

@@ -4,7 +4,7 @@ import { Avatar, Button, Dropdown, DropdownDivider, TextInput } from "flowbite-r
 import { signoutSuccess } from "../redux/user/userSlice";
 import { useEffect, useState } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
-import logo from "../assets/Wn Resturants logo.png";
+import logo from "../assets/banglar_heshel_logo_final.png";
 
 export default function Header() {
     const path = useLocation().pathname;
@@ -60,8 +60,9 @@ export default function Header() {
     return (
         <header className={`border-b-2 border-b-black shadow-md relative bg-gradient-to-r from-[#AC5180] to-[#160121]`}>
             <div className="flex items-center justify-between p-6 mx-auto max-w-7xl">
-                <Link to="/">
-                    <img src={logo} alt="Banglar Heshel Logo" className="w-40" />
+                <Link to="/" className="flex items-center gap-2">
+                    <img src={logo} alt="Banglar Heshel Logo" className="w-16 h-16 rounded-full object-cover" />
+                    <span className="self-center text-xl font-semibold whitespace-nowrap text-[#D4D4D4] font-serif">Banglar Heshel</span>
                 </Link>
                 
 
