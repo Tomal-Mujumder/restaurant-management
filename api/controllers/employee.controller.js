@@ -40,6 +40,13 @@ export const updateEmployee = async (req, res, next) => {
     }
   }
 
+  // Validate phone number
+  if (req.body.phone) {
+    if (!/^\d{11}$/.test(req.body.phone)) {
+      return next(errorHandler(400, 'Phone number must be exactly 11 digits'));
+    }
+  }
+
     try {
       const updatedEmployee = await Employee.findByIdAndUpdate(
         req.params.empId,

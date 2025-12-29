@@ -7,7 +7,7 @@ export const create = async (req, res, next) => {
 
   const nicRegex = /^(?:[0-9]{9}[VvXx]||[0-9]{12})$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^[0-9]{11}$/;
+  const phoneRegex = /^\d{11}$/;
 
   if (
     !firstname ||

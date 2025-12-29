@@ -37,7 +37,13 @@ const userSchema = new mongoose.Schema({
     },
     contactNumber: {
         type: String,
-        default: '071 111 1111',    
+        default: '071 111 1111',
+        validate: {
+            validator: function(v) {
+                return /^\d{11}$/.test(v);
+            },
+            message: props => `Phone number must be exactly 11 digits`
+        }
     },
     profilePicture:{
         type: String,

@@ -29,9 +29,15 @@ const employeeSchema = new mongoose.Schema({
         unique: true,
     },
     phone: {
-        type: Number,
+        type: String,
         required: true,
         unique: true,
+        validate: {
+            validator: function(v) {
+                return /^\d{11}$/.test(v);
+            },
+            message: props => `Phone number must be exactly 11 digits`
+        }
     },
     password: {
         type: String,
