@@ -59,8 +59,13 @@ app.listen(3000, () => {
 
 
 app.use((err, req, res, next) => {
-  const statusCode =err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
+  const statusCode = err.statusCode || 500;
+  let message = err.message || 'Internal Server Error';
+
+  if (err.name === 'ValidationError') {
+    message = Object.values(err.errors).map((val) => val.message).join(', ');
+  }
+
   res.status(statusCode).json ({
     success: false,
     statusCode,

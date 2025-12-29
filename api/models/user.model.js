@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
     },
     contactNumber: {
         type: String,
-        default: '071 111 1111',
+        default: '00000000000',
         validate: {
             validator: function(v) {
                 return /^\d{11}$/.test(v);

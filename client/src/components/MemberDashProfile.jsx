@@ -290,7 +290,9 @@ export default function DashProfile() {
           <Alert color='failure'>{updateUserError}</Alert>
         )}
         {updateUserSuccess && (
-          <Alert color='success'>{updateUserSuccess}</Alert>
+          <Alert color='success' className='mb-5 text-green-800 bg-green-100 font-medium'>
+            {updateUserSuccess}
+          </Alert>
         )}
       </form>
       <div className='flex items-center justify-between mt-6'>
