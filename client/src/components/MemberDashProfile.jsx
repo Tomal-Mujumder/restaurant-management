@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage';
@@ -5,10 +6,9 @@ import { app } from '../firebase';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { updateStart, updateSuccess, updateFailure, deleteUserStart, deleteUserSuccess, deleteUserFailure, signoutSuccess } from '../redux/user/userSlice';
-import { Alert, Button, Modal, ModalBody, Spinner, TextInput } from 'flowbite-react';
-import { HiEye, HiEyeOff } from 'react-icons/hi';
+import { HiOutlineExclamationCircle, HiEye, HiEyeOff } from 'react-icons/hi';
+import { Alert, Button, Modal, TextInput, Spinner } from 'flowbite-react';
 import { useNavigate } from 'react-router-dom';
-
 
 export default function DashProfile() {
   const { currentUser, error, loading } = useSelector((state) => state.user);
@@ -20,7 +20,7 @@ export default function DashProfile() {
   const [updateUserSuccess, setUpdateUserSuccess] = useState(null);
   const [updateUserError, setUpdateUserError] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Merged Logic
   const [formData, setFormData] = useState({});
   const filePickerRef = useRef();
   const dispatch = useDispatch();
@@ -87,23 +87,22 @@ export default function DashProfile() {
       return;
     }
 
-    // Validation checks
     if (formData.username !== undefined) {
-        if (formData.username.trim() === "") {
-             setUpdateUserError("Username cannot be empty");
-             return;
-        }
-        if (!/^[a-zA-Z0-9_ ]+$/.test(formData.username)) {
-            setUpdateUserError("Username must contain only letters, numbers, spaces, and underscores");
-            return;
-        }
+      if (formData.username.trim() === "") {
+        setUpdateUserError("Username cannot be empty");
+        return;
+      }
+      if (!/^[a-zA-Z0-9_ ]+$/.test(formData.username)) {
+        setUpdateUserError("Username must contain only letters, numbers, spaces, and underscores");
+        return;
+      }
     }
 
     if (formData.contactNumber !== undefined) {
-         if (!/^\d{11}$/.test(formData.contactNumber)) {
-             setUpdateUserError("Contact number must be exactly 11 digits");
-             return;
-         }
+      if (!/^\d{11}$/.test(formData.contactNumber)) {
+        setUpdateUserError("Contact number must be exactly 11 digits");
+        return;
+      }
     }
 
     try {
@@ -150,26 +149,21 @@ export default function DashProfile() {
 
   const handleSignout = async () => {
     try {
-        // Get userId before clearing
-        const userId = localStorage.getItem('userId');
+      const res = await fetch('/api/user/signout', {
+        method: 'POST',
+      });
+      const data = await res.json();
 
-        const res = await fetch('/api/user/signout', {
-            method: 'POST',
-        });
-        const data = await res.json();
-        
-        if (!res.ok) {
-            console.log(data.message);
-        } else {
-           
-             // Dispatch signout action and navigate
-            dispatch(signoutSuccess());
-            navigate(`/`);
-        }
+      if (!res.ok) {
+        console.log(data.message);
+      } else {
+        dispatch(signoutSuccess());
+        navigate(`/`);
+      }
     } catch (error) {
-        console.log(error.message);
+      console.log(error.message);
     }
-};
+  };
 
   if (!currentUser) {
     return (
@@ -218,9 +212,8 @@ export default function DashProfile() {
           <img
             src={imageFileUrl || currentUser.profilePicture}
             alt='user'
-            className={`rounded-full w-full h-full object-cover border-8 border-[lightgray] ${
-              imageFileUploadProgress && imageFileUploadProgress < 100 && 'opacity-60'
-            }`}
+            className={`rounded-full w-full h-full object-cover border-8 border-[lightgray] ${imageFileUploadProgress && imageFileUploadProgress < 100 && 'opacity-60'
+              }`}
           />
         </div>
         {imageFileUploadError && (
@@ -230,7 +223,7 @@ export default function DashProfile() {
           type='text'
           id='username'
           placeholder='Username'
-          defaultValue={currentUser.username}
+          defaultValue={currentUser.username || ''}
           onChange={handleChange}
           className='text-black'
         />
@@ -238,7 +231,7 @@ export default function DashProfile() {
           type='email'
           id='email'
           placeholder='Email'
-          defaultValue={currentUser.email}
+          defaultValue={currentUser.email || ''}
           onChange={handleChange}
           className='text-black'
         />
@@ -263,11 +256,16 @@ export default function DashProfile() {
           type='text'
           id='name'
           placeholder='Your Name'
-          defaultValue={currentUser.name}
+          defaultValue={currentUser.name || ''}
           onChange={handleChange}
           className='text-black'
         />
-        <select id='gender' onChange={handleChange} className='w-full p-2 text-black border border-gray-300 rounded-md bg-color-gray-800 dark:text-gray-400' defaultValue={currentUser.gender}>
+        <select
+          id='gender'
+          onChange={handleChange}
+          className='w-full p-2 text-black border border-gray-300 rounded-md bg-color-gray-800 dark:text-gray-400'
+          defaultValue={currentUser.gender || ''}
+        >
           <option value=''>Select Gender</option>
           <option value='male'>Male</option>
           <option value='female'>Female</option>
@@ -284,7 +282,7 @@ export default function DashProfile() {
           type='text'
           placeholder='Your Address'
           id='address'
-          defaultValue={currentUser.address}
+          defaultValue={currentUser.address || ''}
           onChange={handleChange}
           className='text-black'
         />
@@ -292,7 +290,7 @@ export default function DashProfile() {
           type='text'
           placeholder='Your Contact Number'
           id='contactNumber'
-          defaultValue={currentUser.contactNumber}
+          defaultValue={currentUser.contactNumber || ''}
           onChange={handleChange}
           className='text-black'
         />
@@ -314,54 +312,53 @@ export default function DashProfile() {
         )}
       </form>
       <div className='flex items-center justify-between mt-6'>
-      <button
-        onClick={() => setShowModal(true)}
-        className='mt-3 text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900'
-      >
-        Delete Account
-      </button>
+        <button
+          onClick={() => setShowModal(true)}
+          className='mt-3 text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900'
+        >
+          Delete Account
+        </button>
 
-      <Modal
-  show={showModal}
-  size='md'
-  popup={true}
-  onClose={() => setShowModal(false)}
-  className='fixed inset-0 z-50 flex items-center justify-center'
->
-  <Modal.Body className='relative p-6 bg-white rounded-lg shadow-lg'>
-    <div className='p-6 text-center border rounded-lg shadow bg-gray-50'>
-      <HiOutlineExclamationCircle className='mx-auto mb-4 text-black h-14 w-14 dark:text-gray-200' />
-      <h3 className='mb-5 text-lg font-semibold text-black'>
-        Are you sure you want to delete your account?
-      </h3>
-      <div className='flex justify-center gap-4'>
-        <Button
-          color='failure'
-          className='text-white bg-black hover:bg-red-700'
-          onClick={handleDeleteUser}
+        <Modal
+          show={showModal}
+          size='md'
+          popup={true}
+          onClose={() => setShowModal(false)}
+          className='fixed inset-0 z-50 flex items-center justify-center'
         >
-          Yes, I'm sure
-        </Button>
-        <Button
-          color='gray'
-          className='text-white bg-black hover:bg-red-700'
-          onClick={() => setShowModal(false)}
+          <Modal.Body className='relative p-6 bg-white rounded-lg shadow-lg'>
+            <div className='p-6 text-center border rounded-lg shadow bg-gray-50'>
+              <HiOutlineExclamationCircle className='mx-auto mb-4 text-black h-14 w-14 dark:text-gray-200' />
+              <h3 className='mb-5 text-lg font-semibold text-black'>
+                Are you sure you want to delete your account?
+              </h3>
+              <div className='flex justify-center gap-4'>
+                <Button
+                  color='failure'
+                  className='text-white bg-black hover:bg-red-700'
+                  onClick={handleDeleteUser}
+                >
+                  Yes, I'm sure
+                </Button>
+                <Button
+                  color='gray'
+                  className='text-white bg-black hover:bg-red-700'
+                  onClick={() => setShowModal(false)}
+                >
+                  No, cancel
+                </Button>
+              </div>
+            </div>
+          </Modal.Body>
+        </Modal>
+
+        <button
+          onClick={handleSignout}
+          className='mt-3 text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900'
         >
-          No, cancel
-        </Button>
+          Sign Out
+        </button>
       </div>
     </div>
-  </Modal.Body>
-</Modal>
-
-      <button
-        onClick={handleSignout}
-        className='mt-3 text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900'
-      >
-        Sign Out
-      </button>
-    </div>
-    </div>
-
   );
 }
