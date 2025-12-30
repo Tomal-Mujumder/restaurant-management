@@ -65,7 +65,8 @@ export default function SignUp() {
       }
 
       setLoading(false);
-      navigate('/signin');
+      // Redirect to OTP verification page with email as query parameter
+      navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
     } catch (error) {
       setLoading(false);
       setErrorMessage(error.message || 'An error occurred');

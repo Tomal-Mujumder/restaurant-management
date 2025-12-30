@@ -24,6 +24,7 @@ import CartPage from "./pages/CartPage.jsx";
 import PayNow from "./components/PayNow.jsx";
 import PaymentReceipt from "./pages/PaymentReceipt.jsx";
 import PaymentManager from "./components/PaymentManager.jsx";
+import VerifyOTP from "./pages/VerifyOTP.jsx";
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
 
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/employee-login" element={<EmployeeLogin />} />
 
         <Route path="/item" element={<Item />} />

@@ -16,16 +16,33 @@ export const signup = async (req, res, next) => {
 
   const hashedPassword = bcryptjs.hashSync(password, 10);
 
+  // Generate 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  
+  // Set OTP expiry to 5 minutes from now
+  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
   const newUser = new User({
     username,
     email,
     password: hashedPassword,
-    
+    otp,
+    otpExpiry,
+    isVerified: false,
   });
 
   try {
     await newUser.save();
-    res.json('Signup successful');
+    
+    // Send OTP email
+    const { sendOTPEmail } = await import('../utils/email.service.js');
+    await sendOTPEmail(email, otp);
+    
+    res.json({ 
+      success: true,
+      message: 'Signup successful. Please check your email for OTP verification.',
+      email: email
+    });
   } catch (error) {
     next(error);
   }
@@ -107,6 +124,95 @@ export const google = async (req, res, next) => {
         })
         .json(rest);
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyOTP = async (req, res, next) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return next(errorHandler(400, 'Email and OTP are required'));
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return next(errorHandler(404, 'User not found'));
+    }
+
+    if (user.isVerified) {
+      return next(errorHandler(400, 'User is already verified'));
+    }
+
+    if (!user.otp || !user.otpExpiry) {
+      return next(errorHandler(400, 'No OTP found. Please request a new one.'));
+    }
+
+    // Check if OTP has expired
+    if (new Date() > user.otpExpiry) {
+      return next(errorHandler(400, 'OTP has expired. Please request a new one.'));
+    }
+
+    // Verify OTP
+    if (user.otp !== otp) {
+      return next(errorHandler(400, 'Invalid OTP'));
+    }
+
+    // Update user as verified and clear OTP fields
+    user.isVerified = true;
+    user.otp = undefined;
+    user.otpExpiry = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendOTP = async (req, res, next) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return next(errorHandler(400, 'Email is required'));
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return next(errorHandler(404, 'User not found'));
+    }
+
+    if (user.isVerified) {
+      return next(errorHandler(400, 'User is already verified'));
+    }
+
+    // Generate new 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Set OTP expiry to 5 minutes from now
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    // Update user with new OTP
+    user.otp = otp;
+    user.otpExpiry = otpExpiry;
+    await user.save();
+
+    // Send OTP email
+    const { sendOTPEmail } = await import('../utils/email.service.js');
+    await sendOTPEmail(email, otp);
+
+    res.status(200).json({
+      success: true,
+      message: 'New OTP sent to your email',
+    });
   } catch (error) {
     next(error);
   }

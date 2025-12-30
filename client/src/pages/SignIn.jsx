@@ -1,6 +1,6 @@
 import { Alert, Button, Label, Spinner, TextInput } from 'flowbite-react';
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import OAuth from '../components/OAuth.jsx';
 import gymImage from '../assets/emplogin.jpg';
@@ -15,6 +15,15 @@ export default function SignIn() {
   const { loading, error: errorMessage } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // Auto-fill email from URL parameter if present
+  useEffect(() => {
+    const emailParam = searchParams.get('email');
+    if (emailParam) {
+      setFormData({ email: emailParam });
+    }
+  }, [searchParams]);
   
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
@@ -70,6 +79,7 @@ export default function SignIn() {
                 type='email'
                 placeholder='Enter your email'
                 id='email'
+                value={formData.email || ''}
                 onChange={handleChange}
                 style={{ color: 'black' }}
               />

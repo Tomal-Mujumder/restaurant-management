@@ -52,6 +52,16 @@ const userSchema = new mongoose.Schema({
     isAdmin: {
         type: Boolean,
         default: false,
+    },
+    otp: {
+        type: String,
+    },
+    otpExpiry: {
+        type: Date,
+    },
+    isVerified: {
+        type: Boolean,
+        default: false,
     }
 }, {timestamps: true});
 
