@@ -1,46 +1,27 @@
+import { Avatar, Dropdown, Navbar } from "flowbite-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Avatar, Button, Dropdown, DropdownDivider, TextInput } from "flowbite-react";
+import { FaUser, FaShoppingBasket } from "react-icons/fa";
 import { signoutSuccess } from "../redux/user/userSlice";
-import { useEffect, useState } from "react";
-import { AiOutlineSearch } from "react-icons/ai";
+// import { useEffect, useState } from "react"; // Search hooks removed
 import logo from "../assets/banglar_heshel_logo_final.png";
 
 export default function Header() {
     const path = useLocation().pathname;
-    const location = useLocation();
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
     const { currentUser } = useSelector((state) => state.user);
-    const [searchTerm, setSearchTerm] = useState('');
-
-    useEffect(() => {
-        const urlParams = new URLSearchParams(location.search);
-        const searchTermFromUrl = urlParams.get('searchTerm');
-        if (searchTermFromUrl) {
-            setSearchTerm(searchTermFromUrl);
-        }
-    }, [location.search]);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    
+    // Cart logic placeholder
+    const cartCount = 0; 
 
     const handleSignout = async () => {
         try {
-            // Get userId before clearing
-            const userId = localStorage.getItem('userId');
-    
-            const res = await fetch('/api/user/signout', {
-                method: 'POST',
-            });
+            const res = await fetch('/api/user/signout', { method: 'POST' });
             const data = await res.json();
-            
             if (!res.ok) {
                 console.log(data.message);
             } else {
-                // Clear cart data before clearing user data
-                if (userId) {
-                    localStorage.removeItem(`cart_${userId}`);
-                }
-                
-                // Dispatch signout action and navigate
                 dispatch(signoutSuccess());
                 navigate(`/`);
             }
@@ -49,75 +30,79 @@ export default function Header() {
         }
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const urlParams = new URLSearchParams(location.search);
-        urlParams.set('searchTerm', searchTerm);
-        const searchQuery = urlParams.toString();
-        navigate(`/search?${searchQuery}`);
-    };
-
     return (
-        <header className={`border-b-2 border-b-black shadow-md relative bg-gradient-to-r from-[#AC5180] to-[#160121]`}>
-            <div className="flex items-center justify-between p-6 mx-auto max-w-7xl">
-                <Link to="/" className="flex items-center gap-2">
-                    <img src={logo} alt="Banglar Heshel Logo" className="w-16 h-16 rounded-full object-cover" />
-                    <span className="self-center text-6xl whitespace-nowrap text-[#D4D4D4] font-['Italianno'] tracking-wider">Banglar Heshel</span>
+        <nav className="bg-[#DC0000] border-b border-red-800 sticky top-0 z-50">
+            <div className="flex items-center justify-between px-8 md:px-16 lg:px-24 py-4 mx-auto w-full">
+                
+                {/* Brand Logo (Left) */}
+                <Link to="/" className="flex items-center flex-shrink-0">
+                    <img src={logo} alt="logo" className="w-12 h-12 rounded-full object-cover mr-3" />
+                    <span className="self-center text-2xl sm:text-3xl whitespace-nowrap text-white font-normal font-['Kavoon'] tracking-wider uppercase">
+                        Banglar Heshel
+                    </span>
                 </Link>
-                
 
-                
-
-                <ul className="flex items-center gap-10"> {/* Aligning items in the center */}
+                {/* Center Navigation Links (Always Visible) */}
+                <ul className="flex items-center gap-6 md:gap-10 mx-4">
                     <Link to="/">
-                        <li className="hidden sm:inline text-[#D4D4D4] hover:underline hover:underline-offset-4 hover:text-white">
-                            Home
+                        <li className={`text-base md:text-lg font-bold font-['Poppins'] uppercase hover:text-black ${path === '/' ? 'text-black' : 'text-white'}`}>
+                            Menu
                         </li>
                     </Link>
                     <Link to="/about">
-                        <li className="hidden sm:inline text-[#D4D4D4] hover:underline hover:underline-offset-4 hover:text-white">
+                        <li className={`text-base md:text-lg font-bold font-['Poppins'] uppercase hover:text-black ${path === '/about' ? 'text-black' : 'text-white'}`}>
                             About
                         </li>
                     </Link>
-                    {!(currentUser?.role === "Manager" || currentUser?.isAdmin) && (
-        <Link to="/item">
-            <li className="hidden sm:inline text-[#D4D4D4] hover:underline hover:underline-offset-4 hover:text-white">
-                Item
-            </li>
-        </Link>
-    )}
+                    <Link to="/item">
+                        <li className={`text-base md:text-lg font-bold font-['Poppins'] uppercase hover:text-black ${path === '/item' ? 'text-black' : 'text-white'}`}>
+                            Items
+                        </li>
+                    </Link>
                 </ul>
 
-                <div className='flex gap-4'> {/* Sign-in dropdown or button */}
-                    {currentUser ? (
-                        <Dropdown
-                            arrowIcon={false}
-                            inline
-                            label={
-                                <Avatar alt='user' img={currentUser.profilePicture} rounded />
-                            }
-                        >
-                            <Dropdown.Header>
-                                <span className='block text-sm'>@{currentUser.username}</span>
-                                <span className='block text-sm font-medium truncate'>
-                                    {currentUser.email}
-                                </span>
-                            </Dropdown.Header>
-                            <Link to={'/Dashboard?tab=profile'}>
-                                <Dropdown.Item>Profile</Dropdown.Item>
-                            </Link>
-                            <DropdownDivider />
-                            <Dropdown.Item onClick={handleSignout}> Signout</Dropdown.Item>
-                        </Dropdown>
-                    ) : (
-                        <Link to='/signin'>
-                            <button className='px-4 py-2 text-white bg-red-900 rounded'>
-                                Sign In
-                            </button>
-                        </Link>
-                    )}
+                {/* Right Side Icons (User & Cart) */}
+                <div className="flex items-center gap-6 flex-shrink-0">
+                    
+                    {/* User Icon / Dropdown */}
+                    <Dropdown
+                        arrowIcon={false}
+                        inline
+                        label={<FaUser className="w-6 h-6 text-white hover:text-gray-200" />}
+                    >
+                        {currentUser ? (
+                             <>
+                                <Dropdown.Header>
+                                    <span className="block text-sm">@{currentUser.username}</span>
+                                    <span className="block text-sm font-medium truncate">{currentUser.email}</span>
+                                </Dropdown.Header>
+                                <Link to={'/Dashboard?tab=profile'}>
+                                    <Dropdown.Item>Profile</Dropdown.Item>
+                                </Link>
+                                <Dropdown.Divider />
+                                <Dropdown.Item onClick={handleSignout}>Sign out</Dropdown.Item>
+                            </>
+                        ) : (
+                            <>
+                                <Link to="/signin">
+                                    <Dropdown.Item>User Login</Dropdown.Item>
+                                </Link>
+                                <Link to="/employee-login">
+                                    <Dropdown.Item>Admin Login</Dropdown.Item>
+                                </Link>
+                            </>
+                        )}
+                    </Dropdown>
+
+                    {/* Cart Icon */}
+                    <Link to="/shoppingCart" className="relative text-white hover:text-gray-200">
+                        <FaShoppingBasket className="w-7 h-7" />
+                        <span className="absolute -top-2 -right-2 bg-[#FFC107] text-black text-xs font-bold px-1.5 py-0.5 rounded-full">
+                            {cartCount}
+                        </span>
+                    </Link>
                 </div>
             </div>
-        </header>
+        </nav>
     );
 }

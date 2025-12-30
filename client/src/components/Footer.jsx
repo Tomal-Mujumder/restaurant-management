@@ -11,7 +11,7 @@ export default function Footer() {
             <div>
                 <h2 className="mb-4 text-base font-bold uppercase tracking-wider text-white">Book A Table</h2>
                 <p className="mb-2 text-gray-400 text-sm">Save time with proper planning</p>
-                <p className="text-3xl font-bold text-[#FFC107]">01877771188</p>
+                <p className="text-3xl font-bold text-[#FFC107]">01537500439</p>
             </div>
 
             {/* Column 2: Opening Hours */}
@@ -41,8 +41,6 @@ export default function Footer() {
                 <h2 className="mb-4 text-base font-bold uppercase tracking-wider text-white">Address</h2>
                 <div className="text-gray-400 text-sm space-y-3">
                     <p><span className="text-white font-semibold">Restaurant</span> | 2/1, Alauddin tower, Lift 2, East Rampura, DIT Road, Dhaka, 1219, Dhaka, Bangladesh</p>
-                    <p><span className="text-white font-semibold">Cafe</span> | 257 West Rampura, DIT Road, Dhaka-1219, Dhaka, Bangladesh</p>
-                    <p><span className="text-white font-semibold">Express</span> | 25/B 3rd Floor, MANAMA MW Heights, House, Taltola Rd, Dhaka 1219, Dhaka, Bangladesh</p>
                 </div>
             </div>
         </div>
