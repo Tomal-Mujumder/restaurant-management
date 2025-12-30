@@ -68,7 +68,13 @@ export default function Header() {
                     <Dropdown
                         arrowIcon={false}
                         inline
-                        label={<FaUser className="w-6 h-6 text-white hover:text-gray-200" />}
+                        label={
+                            currentUser ? (
+                                <img src={currentUser.profilePicture} alt="user" className="w-8 h-8 rounded-full border-2 border-white object-cover" />
+                            ) : (
+                                <FaUser className="w-6 h-6 text-white hover:text-gray-200" />
+                            )
+                        }
                     >
                         {currentUser ? (
                              <>
