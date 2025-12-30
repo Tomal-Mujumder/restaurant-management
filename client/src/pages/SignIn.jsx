@@ -1,4 +1,5 @@
 import { Alert, Button, Label, Spinner, TextInput } from 'flowbite-react';
+import { HiEye, HiEyeOff } from 'react-icons/hi';
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,16 +13,23 @@ import {
 
 export default function SignIn() {
   const [formData, setFormData] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(null);
   const { loading, error: errorMessage } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
-  // Auto-fill email from URL parameter if present
+  // Auto-fill email and check for success messages from URL parameters
   useEffect(() => {
     const emailParam = searchParams.get('email');
     if (emailParam) {
       setFormData({ email: emailParam });
+    }
+
+    const resetParam = searchParams.get('reset');
+    if (resetParam === 'success') {
+      setSuccessMessage('Password updated! Please log in with your new credentials.');
     }
   }, [searchParams]);
   
@@ -86,13 +94,27 @@ export default function SignIn() {
             </div>
             <div>
               <Label value='Password' style={{ color: 'black' }} />
-              <TextInput
-                type='password'
-                placeholder='**********'
-                id='password'
-                onChange={handleChange}
-                style={{ color: 'black' }}
-              />
+              <div className='relative'>
+                <TextInput
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder='**********'
+                  id='password'
+                  onChange={handleChange}
+                  style={{ color: 'black' }}
+                />
+                <button
+                  type='button'
+                  className='absolute right-2 top-2 text-gray-500'
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
+                </button>
+              </div>
+              <div className="flex justify-end mt-2">
+                <Link to='/forgot-password' style={{ color: 'black' }} className='text-xs font-semibold hover:underline'>
+                  Forgot Password?
+                </Link>
+              </div>
             </div>
             <button
               type="submit"
@@ -116,6 +138,11 @@ export default function SignIn() {
               Sign Up
             </Link>
           </div>
+          {successMessage && (
+            <Alert className='mt-5' color='success'>
+              {successMessage}
+            </Alert>
+          )}
           {errorMessage && (
             <Alert className='mt-5' color='failure'>
               {errorMessage}

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Alert, Label, Spinner, TextInput } from 'flowbite-react';
+import { HiEye, HiEyeOff } from 'react-icons/hi';
 import { Link, useNavigate } from 'react-router-dom';
 import OAuth from '../components/OAuth.jsx';
 import gymImage from '../assets/signup.jpg';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -43,9 +45,9 @@ export default function SignUp() {
     }
 
     // Password validation
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(formData.password)) {
-      return setErrorMessage('Password must be at least 6 characters long and contain both letters and numbers.');
+      return setErrorMessage('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.');
     }
 
     try {
@@ -113,13 +115,22 @@ export default function SignUp() {
             </div>
             <div>
               <Label value='Password' style={{ color: 'black' }} />
-              <TextInput
-                type='password'
-                placeholder='Password'
-                id='password'
-                onChange={handleChange}
-                style={{ color: 'black' }} // Ensure text color is black
-              />
+              <div className='relative'>
+                <TextInput
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder='Password'
+                  id='password'
+                  onChange={handleChange}
+                  style={{ color: 'black' }}
+                />
+                <button
+                  type='button'
+                  className='absolute right-2 top-2 text-gray-500'
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
+                </button>
+              </div>
             </div>
             
             <button

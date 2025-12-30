@@ -5,8 +5,8 @@ import { app } from '../firebase';
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { updateStart, updateSuccess, updateFailure, deleteUserStart, deleteUserSuccess, deleteUserFailure, signoutSuccess } from '../redux/user/userSlice';
-import { HiOutlineExclamationCircle } from 'react-icons/hi';
-import { Alert, Button, Modal, ModalBody, TextInput } from 'flowbite-react';
+import { Alert, Button, Modal, ModalBody, Spinner, TextInput } from 'flowbite-react';
+import { HiEye, HiEyeOff } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -20,6 +20,7 @@ export default function DashProfile() {
   const [updateUserSuccess, setUpdateUserSuccess] = useState(null);
   const [updateUserError, setUpdateUserError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({});
   const filePickerRef = useRef();
   const dispatch = useDispatch();
@@ -170,6 +171,14 @@ export default function DashProfile() {
     }
 };
 
+  if (!currentUser) {
+    return (
+      <div className='flex items-center justify-center min-h-screen w-full'>
+        <Spinner size='xl' />
+      </div>
+    );
+  }
+
   const formattedDate = currentUser.dateOfBirth ? currentUser.dateOfBirth.split('T')[0] : '';
 
   return (
@@ -233,13 +242,22 @@ export default function DashProfile() {
           onChange={handleChange}
           className='text-black'
         />
-        <TextInput
-          type='password'
-          id='password'
-          placeholder='Password'
-          onChange={handleChange}
-          className='text-black'
-        />
+        <div className='relative'>
+          <TextInput
+            type={showPassword ? 'text' : 'password'}
+            id='password'
+            placeholder='Password'
+            onChange={handleChange}
+            className='text-black'
+          />
+          <button
+            type='button'
+            className='absolute right-2 top-2 text-gray-500'
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
+          </button>
+        </div>
         <h4 className='text-black'> Personal Information </h4>
         <TextInput
           type='text'

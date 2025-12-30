@@ -2,11 +2,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SignUp from "./pages/SignUp.jsx";
 import Home from "./pages/Home.jsx";
 import About from "./pages/About.jsx";
-import DashBoard from "./pages/DashBoard.jsx";
+import Dashboard from "./pages/DashBoard.jsx";
 import SignIn from "./pages/SignIn.jsx";
 import Header from "./components/Header.jsx";
 import Item from "./pages/Item.jsx";
-import Dashboard from "./pages/DashBoard.jsx";
 import MemberView from "./pages/MemberView.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import EmployeeLogin from "./pages/EmployeeLogin.jsx";
@@ -25,6 +24,8 @@ import PayNow from "./components/PayNow.jsx";
 import PaymentReceipt from "./pages/PaymentReceipt.jsx";
 import PaymentManager from "./components/PaymentManager.jsx";
 import VerifyOTP from "./pages/VerifyOTP.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 
 export default function App() {
   return (
@@ -33,11 +34,12 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
-        <Route path="/dashboard" element={<DashBoard />} />
 
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/employee-login" element={<EmployeeLogin />} />
 
         <Route path="/item" element={<Item />} />
@@ -74,8 +76,6 @@ export default function App() {
             path="/view-employee-details/:empId"
             element={<AdminViewEmployeeDetails />}
           />
-
-          <Route path="/member-view/:userId" element={<MemberView />} />
         </Route>
 
         {/* <Route path="/updateFoods/:id" element

@@ -11,7 +11,7 @@ export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password || username === '' || email === '' || password === '') {
-    next(errorHandler(400, 'All fields are required'));
+    return next(errorHandler(400, 'All fields are required'));
   }
 
   const hashedPassword = bcryptjs.hashSync(password, 10);
@@ -52,7 +52,7 @@ export const signin = async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password || email === '' || password === '') {
-    next(errorHandler(400, 'All fields are required'));
+    return next(errorHandler(400, 'All fields are required'));
   }
 
   try {
@@ -143,10 +143,6 @@ export const verifyOTP = async (req, res, next) => {
       return next(errorHandler(404, 'User not found'));
     }
 
-    if (user.isVerified) {
-      return next(errorHandler(400, 'User is already verified'));
-    }
-
     if (!user.otp || !user.otpExpiry) {
       return next(errorHandler(400, 'No OTP found. Please request a new one.'));
     }
@@ -161,7 +157,19 @@ export const verifyOTP = async (req, res, next) => {
       return next(errorHandler(400, 'Invalid OTP'));
     }
 
-    // Update user as verified and clear OTP fields
+    // Handle Password Reset verification (don't consume OTP yet)
+    if (req.body.type === 'reset') {
+      return res.status(200).json({
+        success: true,
+        message: 'OTP verified successfully',
+      });
+    }
+
+    // For signup verification: Check if already verified and then update
+    if (user.isVerified) {
+      return next(errorHandler(400, 'User is already verified'));
+    }
+
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpiry = undefined;
@@ -190,9 +198,9 @@ export const resendOTP = async (req, res, next) => {
       return next(errorHandler(404, 'User not found'));
     }
 
-    if (user.isVerified) {
-      return next(errorHandler(400, 'User is already verified'));
-    }
+    // Check verification status only for non-reset flows (optional, but good for cleanup)
+    // For simplicity, we allow resending OTP if user exists, regardless of verified status
+    // since forgot password needs resend even for verified users.
 
     // Generate new 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -205,13 +213,105 @@ export const resendOTP = async (req, res, next) => {
     user.otpExpiry = otpExpiry;
     await user.save();
 
-    // Send OTP email
-    const { sendOTPEmail } = await import('../utils/email.service.js');
-    await sendOTPEmail(email, otp);
+    // Determine email type based on request body or context? 
+    // Since resendOTP is generic, we'll try to guess or use a generic OTP email.
+    // However, existing usage implies signup. For forgot password, we might want the specific template.
+    // We can add a type param here too.
+    
+    if (req.body.type === 'reset') {
+       const { sendPasswordResetOTP } = await import('../utils/email.service.js');
+       await sendPasswordResetOTP(email, otp);
+    } else {
+       const { sendOTPEmail } = await import('../utils/email.service.js');
+       await sendOTPEmail(email, otp);
+    }
 
     res.status(200).json({
       success: true,
       message: 'New OTP sent to your email',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const forgotPassword = async (req, res, next) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return next(errorHandler(400, 'Email is required'));
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      // For security, do not reveal that user doesn't exist
+      // But for this project's UX requirements, we might return 404
+      // Let's return 404 to be helpful as requested in plan
+      return next(errorHandler(404, 'User not found'));
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Set OTP expiry to 5 minutes from now
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    user.otp = otp;
+    user.otpExpiry = otpExpiry;
+    await user.save();
+
+    // Send Password Reset OTP
+    const { sendPasswordResetOTP } = await import('../utils/email.service.js');
+    await sendPasswordResetOTP(email, otp);
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset OTP sent to your email',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  const { email, otp, password } = req.body;
+
+  if (!email || !otp || !password) {
+    return next(errorHandler(400, 'All fields are required'));
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return next(errorHandler(404, 'User not found'));
+    }
+
+    if (!user.otp || !user.otpExpiry) {
+      return next(errorHandler(400, 'Invalid request or OTP expired'));
+    }
+
+    if (new Date() > user.otpExpiry) {
+      return next(errorHandler(400, 'OTP has expired'));
+    }
+
+    if (user.otp !== otp) {
+      return next(errorHandler(400, 'Invalid OTP'));
+    }
+
+    // Hash new password
+    const hashedPassword = bcryptjs.hashSync(password, 10);
+
+    user.password = hashedPassword;
+    user.otp = undefined;
+    user.otpExpiry = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset successfully',
     });
   } catch (error) {
     next(error);

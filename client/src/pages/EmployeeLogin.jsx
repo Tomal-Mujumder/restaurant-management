@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Cover_Image from "../assets/emplogin1.jpg";
 import { Alert, Spinner } from "flowbite-react";
+import { HiEye, HiEyeOff } from 'react-icons/hi';
 import { useDispatch, useSelector } from "react-redux";
 import { signInStart, signInSuccess, signInFailure } from "../redux/user/userSlice";
 export default function EmployeeLogin() {
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
   const {loading, error: errorMessage} = useSelector(state => state.user);
   const dispatch = useDispatch();
   const handleChange = (e) => {
@@ -77,13 +79,22 @@ export default function EmployeeLogin() {
                 onChange={handleChange}
               />
               <label htmlFor="" className="text-[#d4d4d4]">Password</label>
-              <input
-                type="password"
-                placeholder="Enter your password"
-                className="w-full rounded-md text-white py-2 my-2 bg-[#707070]  border outline-none focus:outline-none placeholder:text-[#d4d4d4] focus:ring-[#03001C]"
-                id="password"
-                onChange={handleChange}
-              />
+              <div className='relative'>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  className="w-full rounded-md text-white py-2 px-10 my-2 bg-[#707070] border outline-none focus:outline-none placeholder:text-[#d4d4d4] focus:ring-[#03001C]"
+                  id="password"
+                  onChange={handleChange}
+                />
+                <button
+                  type='button'
+                  className='absolute right-3 top-5 text-[#d4d4d4]'
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-col w-full my-4">

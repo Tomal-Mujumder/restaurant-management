@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { signoutSuccess } from '../redux/user/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { HiArrowSmRight, HiOutlineUserGroup } from 'react-icons/hi';
+import { HiArrowSmRight, HiOutlineUserGroup, HiUser } from 'react-icons/hi';
 import { Sidebar } from 'flowbite-react';
 
 export default function DashSideBar() {
@@ -65,7 +65,21 @@ export default function DashSideBar() {
             <Sidebar.ItemGroup className='flex flex-col gap-1'>
 
 
-              {currentUser?.isAdmin && ( // Ensure currentUser is defined before checking isAdmin
+              <Link to='/dashboard?tab=profile'>
+                <Sidebar.Item
+                  active={tab === 'profile'}
+                  icon={HiUser}
+                  label={currentUser?.isAdmin ? 'Admin' : 'User'}
+                  labelColor='dark'
+                  as='div'
+                  className={`hover:bg-gray-700 ${tab === 'profile' ? 'bg-gray-800' : ''}`}
+                  style={itemStyle}
+                >
+                  Profile
+                </Sidebar.Item>
+              </Link>
+
+              {currentUser?.isAdmin && (
                 <Link to='/dashboard?tab=users'>
                   <Sidebar.Item
                     active={tab === 'users'}
@@ -78,6 +92,15 @@ export default function DashSideBar() {
                   </Sidebar.Item>
                 </Link>
               )}
+
+              <Sidebar.Item
+                icon={HiArrowSmRight}
+                className='cursor-pointer hover:bg-gray-700'
+                onClick={handleSignout}
+                style={itemStyle}
+              >
+                Sign Out
+              </Sidebar.Item>
 
 
             </Sidebar.ItemGroup>

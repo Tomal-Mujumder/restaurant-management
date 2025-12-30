@@ -14,13 +14,14 @@ export default function VerifyOTP() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const email = searchParams.get('email');
+  const type = searchParams.get('type'); // signup or reset
 
   // Redirect if no email in URL
   useEffect(() => {
     if (!email) {
-      navigate('/signup');
+      navigate(type === 'reset' ? '/forgot-password' : '/signup');
     }
-  }, [email, navigate]);
+  }, [email, navigate, type]);
 
   // Auto-focus on first input
   useEffect(() => {
@@ -87,7 +88,7 @@ export default function VerifyOTP() {
       const res = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp: otpCode }),
+        body: JSON.stringify({ email, otp: otpCode, type }),
       });
 
       const data = await res.json();
@@ -97,12 +98,21 @@ export default function VerifyOTP() {
       }
 
       setLoading(false);
-      setSuccessMessage('Email verified successfully! You can now log in.');
       
-      // Redirect to sign-in page with email parameter after 1.5 seconds
-      setTimeout(() => {
-        navigate(`/signin?email=${encodeURIComponent(email)}`);
-      }, 1500);
+      if (type === 'reset') {
+        setSuccessMessage('OTP verified! Please set your new password.');
+        // Store verification token for security guard
+        sessionStorage.setItem('resetToken', 'true');
+        sessionStorage.setItem('reset_otp', otpCode);
+        setTimeout(() => {
+          navigate(`/reset-password?email=${encodeURIComponent(email)}`);
+        }, 1500);
+      } else {
+        setSuccessMessage('Email verified successfully! You can now log in.');
+        setTimeout(() => {
+          navigate(`/signin?email=${encodeURIComponent(email)}`);
+        }, 1500);
+      }
     } catch (error) {
       setLoading(false);
       setErrorMessage(error.message || 'An error occurred');
@@ -120,7 +130,7 @@ export default function VerifyOTP() {
       const res = await fetch('/api/auth/resend-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, type }),
       });
 
       const data = await res.json();
@@ -152,7 +162,9 @@ export default function VerifyOTP() {
           {/* right */}
           <div className="flex-1">
             <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
-              <h4 className='text-xl font-bold' style={{ color: 'black' }}>Verify Your Email</h4>
+              <h4 className='text-xl font-bold' style={{ color: 'black' }}>
+                {type === 'reset' ? 'Verify Password Reset' : 'Verify Your Email'}
+              </h4>
               <p className='text-sm text-center' style={{ color: '#707070' }}>
                 We've sent a 6-digit code to <strong>{email}</strong>
               </p>
