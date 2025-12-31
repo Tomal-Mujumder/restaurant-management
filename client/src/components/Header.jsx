@@ -94,7 +94,7 @@ export default function Header() {
                                     <Dropdown.Item>User Login</Dropdown.Item>
                                 </Link>
                                 <Link to="/employee-login">
-                                    <Dropdown.Item>Admin Login</Dropdown.Item>
+                                    <Dropdown.Item>Employee Login</Dropdown.Item>
                                 </Link>
                             </>
                         )}
