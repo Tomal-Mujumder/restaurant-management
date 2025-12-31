@@ -24,7 +24,7 @@ export const create = async (req, res, next) => {
     nic === ""  ||
     role === "" 
   ) {
-    next(errorHandler(400, "All are required"));
+    return next(errorHandler(400, "All are required"));
   }
   
 
@@ -70,7 +70,7 @@ export const create = async (req, res, next) => {
   });
   try {
     await newEmployee.save();
-    res.json("Employee created");
+    res.status(201).json({ success: true, message: "Employee created successfully" });
   } catch (error) {
     next(error);
   }
@@ -80,13 +80,13 @@ export const login = async (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password || email === "" || password === "") {
-    next(errorHandler(400, "All fields are required"));
+    return next(errorHandler(400, "All fields are required"));
   }
 
   try {
     const validEmployee = await Employee.findOne({ email });
     if (!validEmployee) {
-      next(errorHandler(404, "User not found"));
+      return next(errorHandler(404, "User not found"));
     }
     const validPassword = bcryptjs.compareSync(
       password,

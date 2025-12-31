@@ -42,23 +42,46 @@ export default function AdminDasAddEmp() {
         },
         body: JSON.stringify(formData),
       });
-      const data = await res.json();
+
+      // Log raw response for debugging
+      console.log("Response status:", res.status);
+      const contentType = res.headers.get("content-type");
+      console.log("Content-Type:", contentType);
+
+      let data;
+      const text = await res.text();
+      console.log("Raw response text:", text);
+
+      if (!text) {
+        throw new Error("Empty response from server");
+      }
+
+      try {
+        data = JSON.parse(text);
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid JSON response from server");
+      }
 
       if (data.success === false) {
         setLoading(false);
         setSuccess(null);
-        return enqueueSnackbar(data.message, { variant: "error" });
+        return enqueueSnackbar(data.message || "Failed to create employee", { variant: "error" });
       }
 
       setLoading(false);
       if (res.ok) {
-        enqueueSnackbar("Employee added successfully", { variant: "success" });
+        enqueueSnackbar(data.message || "Employee added successfully", { variant: "success" });
         navigate("/admin-dashboard");
+      } else {
+        enqueueSnackbar(data.message || "Something went wrong", { variant: "error" });
       }
     } catch (error) {
+      console.error("Submit error:", error);
       setError(error.message);
       setLoading(false);
       setSuccess(null);
+      enqueueSnackbar(error.message, { variant: "error" });
     }
   };
 
@@ -129,7 +152,7 @@ export default function AdminDasAddEmp() {
                 </label>
                 <input
                   type="text"
-                  placeholder="Enter NIC"
+                  placeholder="12 digits"
                   className="text-[#1f1f1f] text-sm py-2 my-2 rounded-md bg-[#d4d4d4] focus:outline-none placeholder:text-[#1f1f1f] focus:ring-[#03001C]"
                   id="nic"
                   onChange={handleChange}

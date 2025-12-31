@@ -1,5 +1,6 @@
 import Employee from "../models/employee.model.js";
 import { errorHandler } from "../utils/error.js";
+import bcryptjs from 'bcryptjs';
 export const signout = (req, res, next) => {
     try {
         res

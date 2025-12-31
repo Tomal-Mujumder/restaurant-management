@@ -306,14 +306,14 @@ const PaymentManager = () => {
           onClick={generatePDF}
           className="px-4 py-2 mb-4 text-white bg-green-500 rounded-md hover:bg-green-700"
         >
-          Complete dPayments
+          Complete Payments
         </button>
 
         <button 
           onClick={UncompletePayments}
           className="px-4 py-2 m-5 mb-4 text-white bg-green-500 rounded-md hover:bg-green-700"
         >
-        Unompleted Payments
+        Incompleted Payments
         </button>
 
         {/* Search Section */}
