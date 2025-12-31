@@ -59,7 +59,7 @@ const ReceiptPDF = ({ paymentDetails, tokenNumber }) => (
 
       <View style={styles.section}>
         <Text style={styles.heading}>Order Summary</Text>
-        <Text style={styles.text}>Total Price: LKR {paymentDetails.totalPrice.toFixed(2)}</Text>
+        <Text style={styles.text}>Total Price: BDT {paymentDetails.totalPrice.toFixed(2)}</Text>
         <Text style={styles.heading}>Items:</Text>
         <View style={styles.list}>
           {paymentDetails.cartItems.map((item, index) => (

@@ -202,7 +202,7 @@ export default function FoodCategoryList() {
                   {item.description}
                 </td>
                 <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                  {` LKR ${item.price}`}
+                  {` BDT ${item.price}`}
                 </td>
                 <td className="px-6 py-4">
                   <button
