@@ -3,6 +3,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable"; // Import the AutoTable plugin
+import { formatCurrencyWithCode, formatCurrency } from "../utils/currency";
 
 const PaymentManager = () => {
   const [payments, setPayments] = useState([]);
@@ -217,10 +218,11 @@ const PaymentManager = () => {
     const tableData = uncompletedPayments.map(payment => ({
       tokenNumber: payment.tokenNumber,
       user: payment.userId ? `${payment.userId.username} (${payment.userId.email})` : "N/A",
-      totalPrice: `BDT ${payment.totalPrice?.toFixed(2)}`,
-      items: payment.cartItems?.map(item => `${item.foodName} - ${item.quantity} x BDT ${item.price?.toFixed(2)}`).join(", ") || "No items"
+      totalPrice: formatCurrencyWithCode(payment.totalPrice),
+      items: payment.cartItems?.map(item => `${item.foodName} - ${item.quantity} x ${formatCurrencyWithCode(item.price)}`).join(", ") || "No items"
       
     }));
+    
     
 
   
@@ -242,7 +244,7 @@ const PaymentManager = () => {
       theme: "grid" // You can choose other themes as well
     });
 
-    doc.text(`Total Price of not Completed Payments: BDT ${totalPrice.toFixed(2)}`,14, 25);
+    doc.text(`Total Price of not Completed Payments: ${formatCurrencyWithCode(totalPrice)}`,14, 25);
    
     // Save the PDF
     doc.save("incomplete_payments.pdf");
@@ -269,7 +271,7 @@ const PaymentManager = () => {
     doc.text("Completed Payments", 20, 20);
   
     // Add Total Price
-    doc.text(`Total Price of Completed Payments: BDT ${totalPrice.toFixed(2)}`, 20, 30);
+    doc.text(`Total Price of Completed Payments: ${formatCurrencyWithCode(totalPrice)}`, 20, 30);
   
     // Generate table
     const tableColumn = [
@@ -282,8 +284,8 @@ const PaymentManager = () => {
       return [
         payment.tokenNumber,
         payment.userId ? `${payment.userId.username} (${payment.userId.email})` : "N/A",
-        `BDT ${payment.totalPrice?.toFixed(2)}`,
-        payment.cartItems?.map(item => `${item.foodName} (${item.quantity} x BDT ${item.price?.toFixed(2)})`).join(", ") || "No items"
+        formatCurrencyWithCode(payment.totalPrice),
+        payment.cartItems?.map(item => `${item.foodName} (${item.quantity} x ${formatCurrencyWithCode(item.price)})`).join(", ") || "No items"
       ];
     });
   
@@ -357,8 +359,8 @@ const PaymentManager = () => {
                   : "User info not available"}
               </p>
               <p>
-                <strong>Total Price:</strong> BDT 
-                {filteredPayment.totalPrice?.toFixed(2)}
+                <strong>Total Price:</strong> 
+                {formatCurrencyWithCode(filteredPayment.totalPrice)}
               </p>
               <p>
                 <strong>Items:</strong>
@@ -366,8 +368,8 @@ const PaymentManager = () => {
               <ul>
                 {filteredPayment.cartItems?.map((item, index) => (
                   <li key={index}>
-                    {item.foodName} - {item.quantity} x BDT 
-                    {item.price?.toFixed(2)}
+                    {item.foodName} - {item.quantity} x 
+                    {formatCurrencyWithCode(item.price)}
                   </li>
                 )) || <li>No items available</li>}
               </ul>
@@ -403,14 +405,14 @@ const PaymentManager = () => {
                       : "User info not available"}
                   </td>
                   <td className="p-2 text-center border border-gray-300">
-                    BDT {payment.totalPrice?.toFixed(2)}
+                    {formatCurrencyWithCode(payment.totalPrice)}
                   </td>
                   <td className="p-2 border border-gray-300">
                     <ul>
                       {payment.cartItems?.map((item, index) => (
                         <li key={index}>
-                          {item.foodName} - {item.quantity} x BDT 
-                          {item.price?.toFixed(2)}
+                          {item.foodName} - {item.quantity} x 
+                          {formatCurrencyWithCode(item.price)}
                         </li>
                       )) || <li>No items available</li>}
                     </ul>
@@ -453,7 +455,7 @@ const PaymentManager = () => {
                   : "User info not available"}
               </p>
               <p>
-                <strong>Total Price:</strong> BDT {selectedPayment.totalPrice?.toFixed(2)}
+                <strong>Total Price:</strong> {formatCurrencyWithCode(selectedPayment.totalPrice)}
               </p>
               <p>
                 <strong>Items:</strong>
@@ -461,7 +463,7 @@ const PaymentManager = () => {
               <ul>
                 {selectedPayment.cartItems?.map((item, index) => (
                   <li key={index}>
-                    {item.foodName} - {item.quantity} x BDT {item.price?.toFixed(2)}
+                    {item.foodName} - {item.quantity} x {formatCurrencyWithCode(item.price)}
                   </li>
                 )) || <li>No items available</li>}
               </ul>

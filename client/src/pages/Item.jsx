@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import Toastify from "toastify-js"; 
 import "toastify-js/src/toastify.css"; 
+import { formatCurrencyWithCode } from "../utils/currency";
 
 export default function Item() {
   const [foodItems, setFoodItems] = useState([]);
@@ -174,7 +175,7 @@ export default function Item() {
                         {item.foodName}
                       </p>
                       <p className="block font-sans text-sm font-medium leading-relaxed text-blue-gray-900">
-                        BDT {item.price}
+                        {formatCurrencyWithCode(item.price)}
                       </p>
                     </div>
                     <p className="block font-sans text-xs font-normal leading-normal text-gray-700 opacity-75">

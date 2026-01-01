@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PDFDownloadLink, Page, Text, View, Document, StyleSheet } from "@react-pdf/renderer";
 import { useSelector } from "react-redux";
+import { formatCurrencyWithCode } from "../utils/currency";
 
 const styles = StyleSheet.create({
   page: {
@@ -58,7 +59,7 @@ const ReceiptPDF = ({ paymentDetails, tokenNumber }) => (
       </View>
       <View style={styles.section}>
         <Text style={styles.heading}>Order Summary</Text>
-        <Text style={styles.text}>Total Price: BDT {paymentDetails.totalPrice.toFixed(2)}</Text>
+        <Text style={styles.text}>Total Price: {formatCurrencyWithCode(paymentDetails.totalPrice)}</Text>
         <Text style={styles.heading}>Items:</Text>
         <View style={styles.list}>
           {paymentDetails.cartItems.map((item, index) => (
@@ -117,10 +118,6 @@ const PaymentReceipt = () => {
             // we will display a simplified receipt or just the token for SSLCommerz for now, 
             // OR we can fetch the latest payment for the user.
             // Let's assume for this "Production Ready" code, we should fetch the latest payment.
-            
-            // NOTE: The user's prompt didn't strictly ask for a new API to fetch payment details.
-            // But to render the PDF properly using the existing component structure, we need that object.
-            // Let's fetch the latest payment for the user from the backend.
             
             // To make it robust:
             // We would need a route `GET /api/payment/latest?token=...`

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 import { useNavigate } from "react-router-dom";
+import { formatCurrencyWithCode } from "../utils/currency";
 
 export default function FoodCategoryList() {
   const [foodItems, setFoodCategories] = useState([]);
@@ -202,7 +203,7 @@ export default function FoodCategoryList() {
                   {item.description}
                 </td>
                 <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                  {` BDT ${item.price}`}
+                  {formatCurrencyWithCode(item.price)}
                 </td>
                 <td className="px-6 py-4">
                   <button

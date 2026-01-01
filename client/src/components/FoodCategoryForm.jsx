@@ -10,6 +10,7 @@ import {
 import { app } from "../firebase"; // Import Firebase app instance
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+import { currencyConfig } from "../config/currency.config";
 
 export default function FoodCategoryForm() {
   const [formData, setFormData] = useState({
@@ -207,13 +208,13 @@ export default function FoodCategoryForm() {
               </div>
 
               <div className="md:col-span-2">
-                <label htmlFor="price">Price</label>
+                <label htmlFor="price">Price ({currencyConfig.code})</label>
                 <input
                   type="number"
                   name="price"
                   value={formData.price}
                   onChange={handleChange}
-                  placeholder="Enter price"
+                  placeholder={`Enter price in ${currencyConfig.code}`}
                   className="w-full h-10 px-4 mt-1 border rounded bg-gray-50"
                   required
                 />

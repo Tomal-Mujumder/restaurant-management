@@ -2,10 +2,6 @@ import SSLCommerzPayment from "sslcommerz-lts";
 import Payment from "../models/Payment.model.js";
 import sslcommerzConfig from "../config/sslcommerz.config.js";
 
-// Temporary storage for transaction data (in a real app, use Redis or database with "pending" status)
-// Map<transactionId, { userId, cartItems, originalPriceLKR, tokenNumber }>
-const transactionStore = new Map();
-
 // Initialize Payment
 export const initPayment = async (req, res, next) => {
   try {
@@ -15,26 +11,34 @@ export const initPayment = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Invalid request data" });
     }
 
-    // Convert LKR to BDT (1 LKR = 0.50 BDT)
-    const amountBDT = totalPrice * 0.5;
-
     // Generate unique transaction ID
     const transactionId = `BH${Date.now()}${userId.substring(0, 4)}`;
     
     // Generate token number
     const tokenNumber = Math.floor(Math.random() * 1000) + 1;
 
-    // Store transaction data temporarily
-    transactionStore.set(transactionId, {
+    // Create a pending payment record in the database
+    // This allows the session to persist even if the server restarts
+    const newPayment = new Payment({
       userId,
       cartItems,
-      totalPrice: totalPrice, // Store original LKR price
+      totalPrice, // Save directly in BDT (no conversion needed as per requirement)
+      paymentInfo: {
+        cardType: "SSLCommerz-Pending",
+        cardName: "Pending",
+        cardNumber: transactionId, // Use this to lookup the transaction later
+        expirationDate: new Date().toISOString(),
+        securityCode: "Pending",
+      },
       tokenNumber,
+      isChecked: false,
     });
 
+    await newPayment.save();
+
     const data = {
-      total_amount: amountBDT,
-      currency: sslcommerzConfig.currency,
+      total_amount: totalPrice, // Use total price directly (BDT)
+      currency: sslcommerzConfig.currency, // BDT
       tran_id: transactionId, // use unique tran_id for each api call
       success_url: sslcommerzConfig.success_url,
       fail_url: sslcommerzConfig.fail_url,
@@ -75,6 +79,8 @@ export const initPayment = async (req, res, next) => {
       if (gatewayUrl) {
         res.status(200).json({ success: true, gatewayUrl, tokenNumber });
       } else {
+        // If init failed, delete the pending payment
+        Payment.findOneAndDelete({ "paymentInfo.cardNumber": transactionId }).exec();
         res.status(400).json({ success: false, message: "SSLCommerz Session was not successful" });
       }
     });
@@ -90,10 +96,10 @@ export const paymentSuccess = async (req, res, next) => {
 
     console.log("SSLCommerz Success:", { tran_id, val_id });
 
-    // Retrieve temporary data
-    const transactionData = transactionStore.get(tran_id);
+    // Find the pending payment by transaction ID (stored in cardNumber)
+    const pendingPayment = await Payment.findOne({ "paymentInfo.cardNumber": tran_id });
 
-    if (!transactionData) {
+    if (!pendingPayment) {
       return res.redirect(`http://localhost:5173/payment-failed?reason=Session Expired or Invalid Transaction`);
     }
 
@@ -107,36 +113,22 @@ export const paymentSuccess = async (req, res, next) => {
     sslcz.validate({ val_id }).then(async (data) => {
       if (data.status === "VALID") {
         
-        // Check for duplicate payment by transaction ID to be safe
-        const existingPayment = await Payment.findOne({ "paymentInfo.cardNumber": tran_id });
-        if(existingPayment) {
-             return res.redirect(`http://localhost:5173/payment-failed?reason=Duplicate Transaction`);
-        }
-
-        // Save payment to database
-        const newPayment = new Payment({
-          userId: transactionData.userId,
-          cartItems: transactionData.cartItems,
-          totalPrice: transactionData.totalPrice, // Original LKR price
-          paymentInfo: {
-            cardType: "SSLCommerz",
-            cardName: "Online Payment",
-            cardNumber: tran_id, // Using transaction ID as card number reference
-            expirationDate: new Date().toISOString(),
-            securityCode: "Gateway Payment",
-          },
-          tokenNumber: transactionData.tokenNumber,
-          isChecked: false,
+        // Update the payment record to mark it as successful
+        // We update the existing record instead of creating a new one
+        await Payment.findByIdAndUpdate(pendingPayment._id, {
+            $set: {
+                "paymentInfo.cardType": "SSLCommerz",
+                "paymentInfo.cardName": "Online Payment",
+                "paymentInfo.securityCode": "Gateway Payment",
+                // You can also save other info from 'data' here if needed
+            }
         });
 
-        await newPayment.save();
-
-        // Clear temporary data
-        transactionStore.delete(tran_id);
-
         // Redirect to success page
-        res.redirect(`http://localhost:5173/payment-receipt?token=${transactionData.tokenNumber}&method=sslcommerz`);
+        res.redirect(`http://localhost:5173/payment-receipt?token=${pendingPayment.tokenNumber}&method=sslcommerz`);
       } else {
+        // Validation failed, delete the pending payment
+        await Payment.findByIdAndDelete(pendingPayment._id);
         res.redirect(`http://localhost:5173/payment-failed?reason=Validation Failed`);
       }
     });
@@ -152,8 +144,8 @@ export const paymentFail = async (req, res, next) => {
     const { tran_id } = req.body;
     console.log("SSLCommerz Fail:", { tran_id });
 
-    // Clear temporary data
-    transactionStore.delete(tran_id);
+    // Delete the pending payment
+    await Payment.findOneAndDelete({ "paymentInfo.cardNumber": tran_id });
 
     res.redirect(`http://localhost:5173/payment-failed?reason=Payment Failed`);
   } catch (error) {
@@ -167,8 +159,8 @@ export const paymentCancel = async (req, res, next) => {
     const { tran_id } = req.body;
     console.log("SSLCommerz Cancel:", { tran_id });
 
-    // Clear temporary data
-    transactionStore.delete(tran_id);
+    // Delete the pending payment
+    await Payment.findOneAndDelete({ "paymentInfo.cardNumber": tran_id });
 
     res.redirect(`http://localhost:5173/shoppingCart?cancelled=true`);
   } catch (error) {
@@ -180,6 +172,8 @@ export const paymentCancel = async (req, res, next) => {
 export const paymentIPN = async (req, res, next) => {
   try {
     console.log("IPN Notification:", req.body);
+    // Handle IPN: Update payment status if needed, verify transaction, etc.
+    // For now, just acknowledge.
     res.status(200).send("IPN Received");
   } catch (error) {
     next(error);

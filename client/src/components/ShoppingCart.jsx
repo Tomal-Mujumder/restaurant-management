@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import PaymentMethodModal from "./PaymentMethodModal";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
+import { formatCurrency, formatCurrencyWithCode } from "../utils/currency";
 
 const ShoppingCart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -154,7 +155,7 @@ const ShoppingCart = () => {
               />
               <div className="flex flex-col">
                 <span className="text-lg font-medium">{item.foodName}</span>
-                <span className="text-lg font-semibold"> BDT {item.price}</span>
+                <span className="text-lg font-semibold"> {formatCurrencyWithCode(item.price)}</span>
                 <button
                   onClick={() => removeItem(item.id)}
                   className="ml-4 font-medium text-red-500 hover:underline"
@@ -182,7 +183,7 @@ const ShoppingCart = () => {
           ))}
           <div className="flex justify-between pt-6 border-t">
             <span className="text-lg font-semibold">Total</span>
-            <span className="text-lg font-semibold">BDT {totalPrice.toFixed(2)}</span>
+            <span className="text-lg font-semibold">{formatCurrencyWithCode(totalPrice)}</span>
           </div>
           <div className="flex justify-end mt-4">
             <button 
