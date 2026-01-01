@@ -70,8 +70,19 @@ const PayNow = () => {
           gravity: "top",
           position: "right",
         }).showToast();
-        // alert("Payment successful!");
+        
         const result = await response.json();
+        
+        // Clear cart from localStorage after successful payment
+        const userId = currentUser?._id;
+        if (userId) {
+          const cartKey = `cart_${userId}`;
+          localStorage.removeItem(cartKey);
+          
+          // Dispatch event to update cart counter
+          window.dispatchEvent(new Event('cartUpdated'));
+        }
+        
         // Redirect to PaymentReceipt page with payment details
         navigate("/payment-receipt", { state: { paymentDetails: result.payment, tokenNumber } });
       } else {

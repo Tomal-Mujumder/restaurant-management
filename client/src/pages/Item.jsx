@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import Toastify from "toastify-js"; 
@@ -40,14 +41,20 @@ export default function Item() {
 
   // Update cart count
   const updateCartCount = () => {
-    const userId = localStorage.getItem("userId");
-    const userCart = JSON.parse(localStorage.getItem(`cart_${userId}`) || "[]");
-    setCartCount(userCart.length);
+    const userId = currentUser?._id;
+    if (userId) {
+        const userCart = JSON.parse(localStorage.getItem(`cart_${userId}`) || "[]");
+        setCartCount(userCart.length);
+    }
   };
 
   // Add food item to the cart
   const addToCart = (item) => {
-    const userId = localStorage.getItem("userId");
+    const userId = currentUser?._id;
+    if (!userId) {
+      showToast("Please log in to add items to cart");
+      return;
+    }
     const cartKey = `cart_${userId}`;
     const currentCartList = JSON.parse(localStorage.getItem(cartKey) || "[]");
 
@@ -69,12 +76,17 @@ export default function Item() {
 
     localStorage.setItem(cartKey, JSON.stringify(currentCartList));
     setCartCount(currentCartList.length);
+    
+    // Dispatch event AFTER localStorage update
+    window.dispatchEvent(new Event('cartUpdated'));
+    
     showToast("Item added to cart!");
   };
 
   // Handle "Buy Now" button click
   const handleBuyNow = (item) => {
     addToCart(item);
+    window.dispatchEvent(new Event('cartUpdated'));
     navigate(`/shoppingCart`);
   };
 
@@ -95,8 +107,7 @@ export default function Item() {
     updateCartCount();
   }, [searchTerm]); // Re-fetch food items on search term change
 
-  const user = JSON.parse(localStorage.getItem("persist:root"))?.user;
-  const currentUser = user ? JSON.parse(user).currentUser : null;
+  const { currentUser } = useSelector((state) => state.user);
 
   return (
     <div className="min-h-screen">

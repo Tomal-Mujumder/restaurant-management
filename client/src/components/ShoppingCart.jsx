@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const ShoppingCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
 
-  // Get user ID from local storage
-  const userId = localStorage.getItem("userId");
+  // Get user ID from Redux
+  const { currentUser } = useSelector((state) => state.user);
+  const userId = currentUser?._id;
   const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
@@ -33,6 +35,7 @@ const ShoppingCart = () => {
     setCartItems(filteredCart);
     calculateTotal(filteredCart);
     updateLocalStorage(filteredCart);
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const updateLocalStorage = (updatedCart) => {
@@ -46,6 +49,7 @@ const ShoppingCart = () => {
     setCartItems(updatedCart);
     calculateTotal(updatedCart);
     updateLocalStorage(updatedCart);
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const handleOrderNow = () => {

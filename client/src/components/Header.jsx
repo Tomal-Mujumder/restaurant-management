@@ -3,7 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FaUser, FaShoppingBasket } from "react-icons/fa";
 import { signoutSuccess } from "../redux/user/userSlice";
-// import { useEffect, useState } from "react"; // Search hooks removed
+import { useEffect, useState } from "react";
+import { MdOutlineShoppingCart } from "react-icons/md";
 import logo from "../assets/banglar_heshel_logo_final.png";
 
 export default function Header() {
@@ -12,8 +13,25 @@ export default function Header() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     
-    // Cart logic placeholder
-    const cartCount = 0; 
+    // Cart logic
+    const [cartCount, setCartCount] = useState(0);
+
+    const updateCartCount = () => {
+        if (currentUser && currentUser._id) {
+            const userId = currentUser._id;
+            const cartKey = `cart_${userId}`;
+            const userCart = JSON.parse(localStorage.getItem(cartKey) || "[]");
+            setCartCount(userCart.length);
+        } else {
+            setCartCount(0);
+        }
+    };
+
+    useEffect(() => {
+        updateCartCount();
+        window.addEventListener('cartUpdated', updateCartCount);
+        return () => window.removeEventListener('cartUpdated', updateCartCount);
+    }, [currentUser]);
 
     const handleSignout = async () => {
         try {
@@ -23,6 +41,7 @@ export default function Header() {
                 console.log(data.message);
             } else {
                 dispatch(signoutSuccess());
+                setCartCount(0);
                 navigate(`/`);
             }
         } catch (error) {
@@ -64,6 +83,18 @@ export default function Header() {
                 {/* Right Side Icons (User & Cart) */}
                 <div className="flex items-center gap-6 flex-shrink-0">
                     
+                    {/* Cart Icon (Visible only to logged-in non-admin/non-manager users) */}
+                    {currentUser && !(currentUser?.role === "Manager" || currentUser?.isAdmin) && (
+                        <Link to="/shoppingCart" className="relative">
+                            <MdOutlineShoppingCart className="text-[#D4D4D4] text-3xl hover:text-white cursor-pointer" />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </Link>
+                    )}
+
                     {/* User Icon / Dropdown */}
                     <Dropdown
                         arrowIcon={false}
@@ -100,13 +131,6 @@ export default function Header() {
                         )}
                     </Dropdown>
 
-                    {/* Cart Icon */}
-                    <Link to="/shoppingCart" className="relative text-white hover:text-gray-200">
-                        <FaShoppingBasket className="w-7 h-7" />
-                        <span className="absolute -top-2 -right-2 bg-[#FFC107] text-black text-xs font-bold px-1.5 py-0.5 rounded-full">
-                            {cartCount}
-                        </span>
-                    </Link>
                 </div>
             </div>
         </nav>
