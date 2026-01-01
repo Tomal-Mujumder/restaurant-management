@@ -28,6 +28,7 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 
 import ResetPassword from "./pages/ResetPassword.jsx";
 import PaymentFailed from "./pages/PaymentFailed.jsx";
+
 import PaymentSuccess from "./pages/PaymentSuccess.jsx";
 
 export default function App() {

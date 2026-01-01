@@ -128,7 +128,7 @@ export const paymentSuccess = async (req, res, next) => {
         });
 
         // Redirect to success page
-        res.redirect(`http://localhost:5173/payment-success?tranId=${tran_id}`);
+        res.redirect(`http://localhost:5173/payment-success?tranId=${pendingPayment.tokenNumber}`);
       } else {
         // Validation failed, delete the pending payment
         await Payment.findByIdAndDelete(pendingPayment._id);
