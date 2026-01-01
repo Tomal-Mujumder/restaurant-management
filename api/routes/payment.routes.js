@@ -5,8 +5,10 @@ import {
   getAllPayments, 
   getPaymentByTokenNumber, 
   updatePayment, 
-  deleteOldPayments 
+  deleteOldPayments,
+  getPaymentDetailsByToken
 } from "../controllers/payment.controller.js";
+import { verifyToken, verifyAdmin } from "../utils/verifyUser.js";
 
 const router = express.Router();
 
@@ -23,6 +25,7 @@ router.get("/search/:tokenNumber", getPaymentByTokenNumber);
 router.put('/update/:paymentId', updatePayment);
 
 // Route to delete payments older than a specified number of days
-router.delete('/deleteold', deleteOldPayments);
+router.post("/delete-old", verifyToken, verifyAdmin, deleteOldPayments);
+router.get("/order/:token", verifyToken, getPaymentDetailsByToken);
 
 export default router;

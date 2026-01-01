@@ -20,7 +20,7 @@ export const savePayment = async (req, res, next) => {
     res.status(201).json({ message: "Payment successful", payment });
   } catch (error) {
     console.error(error);
-    next(errorHandler(500, { message: "Payment failed" }));
+    next(errorHandler(500, "Payment failed"));
   }
 };
 
@@ -31,7 +31,7 @@ export const getAllPayments = async (req, res, next) => {
     res.status(200).json(payments);
   } catch (error) {
     console.error(error);
-    next(errorHandler(500, { message: "Failed to retrieve payment details" }));
+    next(errorHandler(500, "Failed to retrieve payment details"));
   }
 };
 
@@ -42,12 +42,12 @@ export const getPaymentByTokenNumber = async (req, res, next) => {
   try {
     const payment = await Payment.findOne({ tokenNumber }).populate("userId", "username email");
     if (!payment) {
-      return next(errorHandler(404, { message: "No payment found with this token number" }));
+      return next(errorHandler(404, "No payment found with this token number"));
     }
     res.status(200).json(payment);
   } catch (error) {
     console.error(error);
-    next(errorHandler(500, { message: "Failed to retrieve payment details" }));
+    next(errorHandler(500, "Failed to retrieve payment details"));
   }
 };
 
@@ -58,7 +58,7 @@ export const updatePayment = async (req, res, next) => {
   try {
     // Check if `isChecked` is provided
     if (typeof isChecked === 'undefined') {
-      return next(errorHandler(400, { message: "isChecked field is required" }));
+      return next(errorHandler(400, "isChecked field is required"));
     }
 
     // Find the payment record by ID
@@ -66,7 +66,7 @@ export const updatePayment = async (req, res, next) => {
     
     // Handle payment not found scenario
     if (!payment) {
-      return next(errorHandler(404, { message: "Payment not found" }));
+      return next(errorHandler(404, "Payment not found"));
     }
 
     // Update the payment status
@@ -85,7 +85,7 @@ export const updatePayment = async (req, res, next) => {
     console.error("Error updating payment:", error);
     
     // Forward the error to the error handler middleware
-    next(errorHandler(500, { message: "Failed to update payment" }));
+    next(errorHandler(500, "Failed to update payment"));
   }
 };
 
@@ -94,7 +94,7 @@ export const deleteOldPayments = async (req, res, next) => {
   const { days } = req.body; // Number of days from the current date
 
   if (typeof days !== 'number' || days < 0) {
-    return next(errorHandler(400, { message: "Invalid number of days provided" }));
+    return next(errorHandler(400, "Invalid number of days provided"));
   }
 
   try {
@@ -115,6 +115,41 @@ export const deleteOldPayments = async (req, res, next) => {
     });
   } catch (error) {
     console.error("Error deleting old payments:", error);
-    next(errorHandler(500, { message: "Failed to delete old payments" }));
+    next(errorHandler(500, "Failed to delete old payments"));
+  }
+};
+
+// Get payment details by token (for Success Page)
+export const getPaymentDetailsByToken = async (req, res, next) => {
+  const { token } = req.params;
+  const user = req.user; // Get user from verifyToken
+
+  try {
+    const payment = await Payment.findOne({ tokenNumber: token }).populate(
+      "userId",
+      "username email"
+    );
+
+    if (!payment) {
+      return next(
+        errorHandler(404, "No order found with this token.")
+      );
+    }
+
+    // Security Check: Ensure the payment belongs to the requesting user
+    // Robust check: Handle missing user, missing payment user, and id vs _id mismatch
+    const requestUserId = user.id || user._id; // Handle both id and _id from JWT payload
+    const paymentUserId = payment.userId ? (payment.userId._id || payment.userId) : null; 
+    
+    // Convert to strings for safe comparison
+    if (!requestUserId || !paymentUserId || String(paymentUserId) !== String(requestUserId)) {
+        return next(errorHandler(403, "Unauthorized access to this order."));
+    }
+
+    // Return specific fields as requested
+    res.status(200).json(payment);
+  } catch (error) {
+    console.error("Error retrieving payment by token:", error);
+    next(errorHandler(500, "Failed to retrieve order details."));
   }
 };

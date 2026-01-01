@@ -1,5 +1,5 @@
 import express from 'express';
-import { addToCart, getUserCart } from '../controllers/cart.controller.js';
+import { addToCart, getUserCart, clearCart } from '../controllers/cart.controller.js';
 import { verifyToken } from '../utils/verifyUser.js';
 
 const router = express.Router();
@@ -9,5 +9,8 @@ router.post('/addToCart', verifyToken, addToCart);
 
 // GET request to get cart items for the user
 router.get('/getCart/:userId', verifyToken, getUserCart);
+
+// DELETE request to clear cart
+router.delete('/clear', verifyToken, clearCart);
 
 export default router;

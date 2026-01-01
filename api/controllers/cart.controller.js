@@ -58,3 +58,17 @@ export const getUserCart = async (req, res, next) => {
     next(errorHandler(500, { message: error.message }));
   }
 };
+
+// Clear cart
+export const clearCart = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    // We can either delete the document or empty the items array. 
+    // Deleting the document is cleaner if the logic handles 'no cart found' gracefully (which updated logic usually does or creates new one).
+    await Cart.findOneAndDelete({ userId });
+    res.status(200).json({ message: "Cart cleared successfully" });
+  } catch (error) {
+    console.error("Error clearing cart:", error);
+    next(errorHandler(500, { message: "Failed to clear cart" }));
+  }
+};
