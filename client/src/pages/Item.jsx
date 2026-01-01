@@ -52,7 +52,8 @@ export default function Item() {
   const addToCart = (item) => {
     const userId = currentUser?._id;
     if (!userId) {
-      showToast("Please log in to add items to cart");
+      showToast("Please login first to add items to cart");
+      navigate("/signin");
       return;
     }
     const cartKey = `cart_${userId}`;
@@ -85,6 +86,11 @@ export default function Item() {
 
   // Handle "Buy Now" button click
   const handleBuyNow = (item) => {
+    if (!currentUser?._id) {
+      showToast("Please login first to add items to cart");
+      navigate("/signin");
+      return;
+    }
     addToCart(item);
     window.dispatchEvent(new Event('cartUpdated'));
     navigate(`/shoppingCart`);
@@ -175,8 +181,7 @@ export default function Item() {
                       {item.description}
                     </p>
                   </div>
-                  {currentUser?._id && (
-                    <div className="absolute flex justify-between bottom-3 left-3 right-3">
+                  <div className="absolute flex justify-between bottom-3 left-3 right-3">
                       <button
                         onClick={() => addToCart(item)}
                         className="px-4 py-2 font-semibold text-white bg-green-600 rounded hover:bg-green-500"
@@ -190,7 +195,6 @@ export default function Item() {
                         Buy Now
                       </button>
                     </div>
-                  )}
                 </div>
               ))}
             </div>
