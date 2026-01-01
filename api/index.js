@@ -13,6 +13,7 @@ import employeeRoutes from "./routes/employee.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 
 import checkoutShopRoutes from "./routes/checkoutShop.routes.js";
+import sslcommerzRoutes from "./routes/sslcommerz.routes.js";
 
 
 // import shippingRoutes from "./routes/shipping.routes.js";
@@ -54,6 +55,7 @@ app.listen(3000, () => {
   app.use('/api/payment', paymentRoutes);
 
   app.use("/api/pay", checkoutShopRoutes);
+  app.use("/api/sslcommerz", sslcommerzRoutes);
   // app.use("/api/shipping", shippingRoutes);
 
 

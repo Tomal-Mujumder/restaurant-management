@@ -1,15 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
+import PaymentMethodModal from "./PaymentMethodModal";
+import Toastify from "toastify-js";
+import "toastify-js/src/toastify.css";
 
 const ShoppingCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Get user ID from Redux
   const { currentUser } = useSelector((state) => state.user);
   const userId = currentUser?._id;
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check for cancelled payment
+    const queryParams = new URLSearchParams(window.location.search);
+    if (queryParams.get("cancelled") === "true") {
+      Toastify({
+        text: "Payment cancelled.",
+        duration: 3000,
+        backgroundColor: "#f59e0b", // Warning color
+      }).showToast();
+        // Remove the query param to avoid showing toast on refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   useEffect(() => {
     // Retrieve cart items from local storage
@@ -53,8 +72,70 @@ const ShoppingCart = () => {
   };
 
   const handleOrderNow = () => {
-    // Navigate to the payment page with cart items and total price
-    navigate("/checkout/payment", { state: { cartItems, totalPrice, userId } });
+    if (cartItems.length === 0) {
+      Toastify({
+        text: "Cart is empty",
+        duration: 3000,
+        backgroundColor: "#ef4444",
+      }).showToast();
+      return;
+    }
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentMethodSelect = async (method) => {
+    setShowPaymentModal(false);
+
+    if (method === "manual") {
+      navigate("/checkout/payment", { state: { cartItems, totalPrice, userId } });
+    } else if (method === "sslcommerz") {
+      setIsProcessing(true);
+      Toastify({
+        text: "Initializing payment...",
+        duration: 3000,
+        backgroundColor: "#3b82f6",
+      }).showToast();
+
+      try {
+        const response = await fetch("/api/sslcommerz/init", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId,
+            cartItems,
+            totalPrice,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          Toastify({
+             text: "Redirecting to payment gateway...",
+             duration: 3000,
+              backgroundColor: "#10b981", 
+          }).showToast();
+          window.location.href = data.gatewayUrl;
+        } else {
+          Toastify({
+            text: data.message || "Failed to initialize payment",
+            duration: 3000,
+            backgroundColor: "#ef4444",
+          }).showToast();
+          setIsProcessing(false);
+        }
+      } catch (error) {
+        console.error("Payment Init Error:", error);
+         Toastify({
+            text: "Server error occurred",
+            duration: 3000,
+            backgroundColor: "#ef4444",
+          }).showToast();
+        setIsProcessing(false);
+      }
+    }
   };
 
   return (
@@ -106,13 +187,23 @@ const ShoppingCart = () => {
           <div className="flex justify-end mt-4">
             <button 
               onClick={handleOrderNow} 
-              className="bg-[#4c0000] hover:bg-[#7e1010] text-white py-2 px-4 rounded-md"
+              disabled={isProcessing}
+              className={`text-white py-2 px-4 rounded-md ${isProcessing ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#4c0000] hover:bg-[#7e1010]'}`}
             >
-              Order Now
+              {isProcessing ? 'Processing...' : 'Order Now'}
             </button>
           </div>
         </div>
       )}
+
+      {/* Payment Method Selection Modal */}
+      <PaymentMethodModal 
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onSelectMethod={handlePaymentMethodSelect}
+        cartItems={cartItems}
+        totalPrice={totalPrice}
+      />
     </div>
   );
 };
