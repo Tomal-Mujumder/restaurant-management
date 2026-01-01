@@ -28,6 +28,7 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 
 import ResetPassword from "./pages/ResetPassword.jsx";
 import PaymentFailed from "./pages/PaymentFailed.jsx";
+import PaymentSuccess from "./pages/PaymentSuccess.jsx";
 
 export default function App() {
   return (
@@ -50,6 +51,7 @@ export default function App() {
         <Route path="/shoppingCart" element={<Shopping />} />
 
         <Route path="/payment-receipt" element={<PaymentReceipt />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/payment-failed" element={<PaymentFailed />} />
         {/* <Route path="/payment-manager" element={<PaymentManager />} /> */}
 

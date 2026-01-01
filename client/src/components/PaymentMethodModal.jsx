@@ -15,7 +15,7 @@ const PaymentMethodModal = ({ isOpen, onClose, onSelectMethod, cartItems, totalP
           <FaTimes size={20} />
         </button>
 
-        <h2 className="mb-6 text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 text-center">
+        <h2 className="mb-6 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#AC5180] to-[#ca8a04] text-center">
           Choose Payment Method
         </h2>
 
@@ -23,10 +23,10 @@ const PaymentMethodModal = ({ isOpen, onClose, onSelectMethod, cartItems, totalP
           {/* Manual Payment Option */}
           <div
             onClick={() => onSelectMethod("manual")}
-            className="group relative p-4 border border-gray-600 rounded-xl cursor-pointer hover:border-pink-500 transition-all duration-300 hover:bg-[#2a2a2a]"
+            className="group relative p-4 border border-gray-600 rounded-xl cursor-pointer hover:border-[#AC5180] transition-all duration-300 hover:bg-[#2a2a2a]"
           >
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-pink-900/30 rounded-full text-pink-500 group-hover:bg-pink-500 group-hover:text-white transition-colors">
+              <div className="p-3 bg-[#AC5180]/30 rounded-full text-[#AC5180] group-hover:bg-[#AC5180] group-hover:text-white transition-colors">
                 <FaCreditCard size={24} />
               </div>
               <div>
@@ -39,10 +39,15 @@ const PaymentMethodModal = ({ isOpen, onClose, onSelectMethod, cartItems, totalP
           {/* SSLCommerz Option */}
           <div
             onClick={() => onSelectMethod("sslcommerz")}
-            className="group relative p-4 border border-gray-600 rounded-xl cursor-pointer hover:border-purple-500 transition-all duration-300 hover:bg-[#2a2a2a]"
+            className="group relative p-4 border border-gray-600 rounded-xl cursor-pointer hover:border-green-500 transition-all duration-300 hover:bg-[#2a2a2a]"
           >
+             {/* Recommended Badge */}
+             <div className="absolute top-0 right-0 px-3 py-1 text-xs font-bold text-white transform translate-x-2 -translate-y-2 bg-green-600 rounded-bl-lg rounded-tr-lg shadow-lg">
+              Recommended
+            </div>
+            
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-purple-900/30 rounded-full text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-colors">
+              <div className="p-3 bg-green-900/30 rounded-full text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors">
                 <FaShieldAlt size={24} />
               </div>
               <div>

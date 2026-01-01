@@ -7,6 +7,9 @@ export const initPayment = async (req, res, next) => {
   try {
     const { userId, cartItems, totalPrice } = req.body;
 
+    // Optional: Clean up old pending sessions
+    deleteOldPendingPayments();
+
     if (!userId || !cartItems || cartItems.length === 0 || !totalPrice) {
       return res.status(400).json({ success: false, message: "Invalid request data" });
     }
@@ -125,7 +128,7 @@ export const paymentSuccess = async (req, res, next) => {
         });
 
         // Redirect to success page
-        res.redirect(`http://localhost:5173/payment-receipt?token=${pendingPayment.tokenNumber}&method=sslcommerz`);
+        res.redirect(`http://localhost:5173/payment-success?tranId=${tran_id}`);
       } else {
         // Validation failed, delete the pending payment
         await Payment.findByIdAndDelete(pendingPayment._id);
@@ -177,5 +180,20 @@ export const paymentIPN = async (req, res, next) => {
     res.status(200).send("IPN Received");
   } catch (error) {
     next(error);
+  }
+};
+
+// Cleanup old pending transactions (older than 30 minutes)
+// This can be called periodically or triggered on new initializations
+export const deleteOldPendingPayments = async () => {
+  try {
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    await Payment.deleteMany({
+      "paymentInfo.cardType": "SSLCommerz-Pending",
+      createdAt: { $lt: thirtyMinutesAgo }
+    });
+    console.log("Cleaned up old pending SSLCommerz transactions");
+  } catch (error) {
+    console.error("Error cleaning up old transactions:", error);
   }
 };
