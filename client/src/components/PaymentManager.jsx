@@ -353,6 +353,9 @@ const PaymentManager = () => {
                 <strong>Token Number:</strong> {filteredPayment.tokenNumber}
               </p>
               <p>
+                <strong>Transaction ID:</strong> {filteredPayment.paymentInfo?.cardNumber || "N/A"}
+              </p>
+              <p>
                 <strong>User:</strong>{" "}
                 {filteredPayment.userId
                   ? `${filteredPayment.userId.username} (${filteredPayment.userId.email})`
@@ -386,6 +389,7 @@ const PaymentManager = () => {
             <thead>
               <tr className="bg-gray-100">
                 <th className="p-2 border border-gray-300">Token Number</th>
+                <th className="p-2 border border-gray-300">Transaction ID</th>
                 <th className="p-2 border border-gray-300">User</th>
                 <th className="p-2 border border-gray-300">Total Price</th>
                 <th className="p-2 border border-gray-300">Items</th>
@@ -398,6 +402,9 @@ const PaymentManager = () => {
                 <tr key={index}>
                   <td className="p-2 text-center border border-gray-300">
                     {payment.tokenNumber}
+                  </td>
+                  <td className="p-2 text-center border border-gray-300">
+                    {payment.paymentInfo?.cardNumber || "N/A"}
                   </td>
                   <td className="p-2 border border-gray-300">
                     {payment.userId
@@ -447,6 +454,9 @@ const PaymentManager = () => {
             <div>
               <p>
                 <strong>Token Number:</strong> {selectedPayment.tokenNumber}
+              </p>
+              <p>
+                <strong>Transaction ID:</strong> {selectedPayment.paymentInfo?.cardNumber || "N/A"}
               </p>
               <p>
                 <strong>User:</strong>{" "}
