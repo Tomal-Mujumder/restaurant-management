@@ -127,7 +127,7 @@ export const getPaymentDetailsByToken = async (req, res, next) => {
   try {
     const payment = await Payment.findOne({ tokenNumber: token }).populate(
       "userId",
-      "username email"
+      "name email contactNumber"
     );
 
     if (!payment) {

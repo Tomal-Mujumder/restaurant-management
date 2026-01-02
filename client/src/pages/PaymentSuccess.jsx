@@ -25,26 +25,40 @@ const ReceiptPDF = ({ orderData }) => (
   <Document>
     <Page size="A4" style={styles.page}>
       <Text style={styles.title}>Payment Receipt</Text>
+      
+      {/* Customer Details */}
+      <View style={styles.section}>
+         <Text style={styles.heading}>Customer Details:</Text>
+         <Text style={styles.text}>Name: {orderData.userId?.name || "N/A"}</Text>
+         <Text style={styles.text}>Email: {orderData.userId?.email || "N/A"}</Text>
+         <Text style={styles.text}>Phone: {orderData.userId?.contactNumber || "N/A"}</Text>
+      </View>
+
       <Text style={styles.text}>Date: {new Date(orderData.createdAt).toLocaleDateString()}</Text>
-      <Text style={styles.text}>Transaction ID: {orderData.paymentInfo?.cardNumber || orderData.tokenNumber}</Text>
+      <Text style={styles.text}>Token Number: {orderData.tokenNumber}</Text>
+      <Text style={styles.text}>Transaction ID: {orderData.paymentInfo.cardNumber}</Text>
       
       <View style={styles.section}>
-        <Text style={styles.heading}>Order Summary</Text>
+        <Text style={styles.heading}>Order Terms</Text>
         <View style={styles.table}>
+            {/* Table Header */}
             <View style={styles.tableRow}>
-                <View style={styles.tableCol}><Text style={styles.tableCell}>Item</Text></View>
-                <View style={styles.tableCol}><Text style={styles.tableCell}>Quantity</Text></View>
-                <View style={styles.tableCol}><Text style={styles.tableCell}>Price</Text></View>
+                <View style={{ ...styles.tableCol, width: "40%" }}><Text style={styles.tableCell}>Item</Text></View>
+                <View style={{ ...styles.tableCol, width: "20%" }}><Text style={styles.tableCell}>Unit Price</Text></View>
+                <View style={{ ...styles.tableCol, width: "20%" }}><Text style={styles.tableCell}>Qty</Text></View>
+                <View style={{ ...styles.tableCol, width: "20%" }}><Text style={styles.tableCell}>Total</Text></View>
             </View>
+            {/* Table Body */}
             {orderData.cartItems.map((item, index) => (
                 <View style={styles.tableRow} key={index}>
-                    <View style={styles.tableCol}><Text style={styles.tableCell}>{item.foodName}</Text></View>
-                    <View style={styles.tableCol}><Text style={styles.tableCell}>{item.quantity}</Text></View>
-                    <View style={styles.tableCol}><Text style={styles.tableCell}>{item.price}</Text></View>
+                    <View style={{ ...styles.tableCol, width: "40%" }}><Text style={styles.tableCell}>{item.foodName}</Text></View>
+                    <View style={{ ...styles.tableCol, width: "20%" }}><Text style={styles.tableCell}>{item.price}</Text></View>
+                    <View style={{ ...styles.tableCol, width: "20%" }}><Text style={styles.tableCell}>{item.quantity}</Text></View>
+                    <View style={{ ...styles.tableCol, width: "20%" }}><Text style={styles.tableCell}>{(item.price * item.quantity).toFixed(2)}</Text></View>
                 </View>
             ))}
         </View>
-        <Text style={{...styles.text, marginTop: 10, fontWeight: 'bold'}}>Total Amount: {orderData.totalPrice}</Text>
+        <Text style={{...styles.text, marginTop: 10, fontWeight: 'bold', textAlign: 'right'}}>Grand Total: BDT {orderData.totalPrice}</Text>
       </View>
 
       <Text style={styles.footer}>Thank you for dining with us!</Text>
@@ -146,6 +160,10 @@ const PaymentSuccess = () => {
                         <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
                             <div className="flex justify-between">
                                 <span className="font-medium">Transaction ID:</span>
+                                <span>{orderData?.paymentInfo?.cardNumber}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="font-medium">Token Number:</span>
                                 <span>{orderData?.tokenNumber}</span>
                             </div>
                              <div className="flex justify-between">
