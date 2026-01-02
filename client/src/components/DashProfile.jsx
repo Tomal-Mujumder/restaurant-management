@@ -1,13 +1,7 @@
 import { TextInput, Alert, Modal } from "flowbite-react";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
-import { app } from "../firebase"; 
+import axios from 'axios';
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import {
@@ -37,6 +31,8 @@ export default function DashProfile() {
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
         setImageFileUploadError("File size exceeds 2MB");
+        setImageFileUploadProgress(null);
+        setImageFile(null);
       } else {
         setImageFile(file);
         setImageFileUrl(URL.createObjectURL(file));
@@ -44,7 +40,7 @@ export default function DashProfile() {
     }
   };
 
-  // Upload image to Firebase storage
+  // Upload image to Cloudinary
   useEffect(() => {
     if (imageFile) {
       uploadImage();
@@ -54,35 +50,33 @@ export default function DashProfile() {
   const uploadImage = async () => {
     setImageFileUploading(true);
     setImageFileUploadError(null);
-    const storage = getStorage(app);
-    const fileName = new Date().getTime() + imageFile.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, imageFile);
+    setImageFileUploadProgress(0);
 
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setImageFileUploadProgress(progress.toFixed(0));
-      },
-      (error) => {
-        setImageFileUploadError(
-          "Could not upload image (File must be less than 2MB)"
-        );
+    const data = new FormData();
+    data.append('image', imageFile);
+
+    try {
+        const res = await axios.post('/api/upload/image', data, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+            onUploadProgress: (progressEvent) => {
+                const progress = (progressEvent.loaded / progressEvent.total) * 100;
+                setImageFileUploadProgress(progress.toFixed(0));
+            },
+        });
+
+        setImageFileUrl(res.data.secure_url);
+        setFormData({ ...formData, profilePicture: res.data.secure_url, profilePicturePublicId: res.data.public_id });
+        setImageFileUploading(false);
+    } catch (error) {
+        setImageFileUploadError("Could not upload image");
         setImageFileUploadProgress(null);
         setImageFile(null);
         setImageFileUrl(null);
         setImageFileUploading(false);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          setImageFileUrl(downloadURL);
-          setFormData({ ...formData, profilePicture: downloadURL });
-          setImageFileUploading(false);
-        });
-      }
-    );
+        console.error(error);
+    }
   };
 
   // Handle form changes

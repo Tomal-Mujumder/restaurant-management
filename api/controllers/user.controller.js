@@ -43,6 +43,27 @@ if (req.body.username) {
   }
 }
 try {
+
+  const user = await User.findById(req.params.userId);
+
+  // If profile picture is being updated and there is an existing one with public_id, delete it
+  if (req.body.profilePicture && user.profilePicturePublicId) {
+    // Only delete if the new profile picture is different (handled by client logic usually, but good to be safe)
+    if (req.body.profilePicture !== user.profilePicture) {
+        // Need to import cloudinary config at the top used for direct delete if not making a separate util service request
+        // Using dynamic import or assuming 'cloudinary' is available if imported. 
+        // Better to import cloudinary at the top of file.
+        const { v2: cloudinary } = await import('cloudinary');
+        cloudinary.config({
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET
+        });
+        
+        await cloudinary.uploader.destroy(user.profilePicturePublicId);
+    }
+  }
+
   const updatedUser = await User.findByIdAndUpdate(
     req.params.userId,
     {
@@ -50,6 +71,7 @@ try {
         username: req.body.username,
         email: req.body.email,
         profilePicture: req.body.profilePicture,
+        profilePicturePublicId: req.body.profilePicturePublicId,
         password: req.body.password,       
         name: req.body.name,
         gender: req.body.gender,

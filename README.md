@@ -49,7 +49,7 @@ https://github.com/user-attachments/assets/6f0e6244-15fc-4bc8-b58d-49248d2b5cdd
     <ul>
       <li>Navigate to `api/` folder.</li>
       <li>Create a file named `.env`.</li>
-      <li>Copy content from `.env.example` and fill in your MongoDB URI and JWT Secret.</li>
+      <li>Copy content from `.env.example` and fill in your MongoDB URI, JWT Secret, and Cloudinary credentials (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET).</li>
       <li>Run `npm install` and `npm start`.</li>
     </ul>
   </li>

@@ -1,13 +1,12 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage';
-import { app } from '../firebase';
+import axios from 'axios';
 import { CircularProgressbar } from 'react-circular-progressbar';
+import { useDispatch, useSelector } from 'react-redux';
+import { deleteUserFailure, deleteUserStart, deleteUserSuccess, signoutSuccess, updateFailure, updateStart, updateSuccess } from '../redux/user/userSlice';
 import 'react-circular-progressbar/dist/styles.css';
-import { updateStart, updateSuccess, updateFailure, deleteUserStart, deleteUserSuccess, deleteUserFailure, signoutSuccess } from '../redux/user/userSlice';
-import { HiOutlineExclamationCircle, HiEye, HiEyeOff } from 'react-icons/hi';
-import { Alert, Button, Modal, TextInput, Spinner } from 'flowbite-react';
+import { HiEye, HiEyeOff, HiOutlineExclamationCircle } from 'react-icons/hi';
+import { Alert, Button, Modal, Spinner, TextInput } from 'flowbite-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function DashProfile() {
@@ -29,6 +28,12 @@ export default function DashProfile() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setImageFileUploadError('File size too large. Max limit is 2MB');
+        setImageFileUploadProgress(null);
+        setImageFile(null);
+        return;
+      }
       setImageFile(file);
       setImageFileUrl(URL.createObjectURL(file));
     }
@@ -43,31 +48,33 @@ export default function DashProfile() {
   const uploadImage = async () => {
     setImageFileUploading(true);
     setImageFileUploadError(null);
-    const storage = getStorage(app);
-    const fileName = new Date().getTime() + imageFile.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, imageFile);
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setImageFileUploadProgress(progress.toFixed(0));
-      },
-      (error) => {
-        setImageFileUploadError('Could not upload image (File must be less than 2MB)');
-        setImageFileUploadProgress(null);
-        setImageFile(null);
-        setImageFileUrl(null);
-        setImageFileUploading(false);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          setImageFileUrl(downloadURL);
-          setFormData({ ...formData, profilePicture: downloadURL });
-          setImageFileUploading(false);
-        });
-      }
-    );
+    setImageFileUploadProgress(0);
+
+    const data = new FormData();
+    data.append('image', imageFile);
+
+    try {
+      const res = await axios.post('/api/upload/image', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          const progress = (progressEvent.loaded / progressEvent.total) * 100;
+          setImageFileUploadProgress(progress.toFixed(0));
+        },
+      });
+
+      setImageFileUrl(res.data.secure_url);
+      setFormData({ ...formData, profilePicture: res.data.secure_url, profilePicturePublicId: res.data.public_id });
+      setImageFileUploading(false);
+    } catch (error) {
+      setImageFileUploadError('Could not upload image');
+      setImageFileUploadProgress(null);
+      setImageFile(null);
+      setImageFileUrl(null);
+      setImageFileUploading(false);
+      console.log(error);
+    }
   };
 
   const handleChange = (e) => {

@@ -48,7 +48,23 @@ export const updateEmployee = async (req, res, next) => {
     }
   }
 
+
     try {
+      const employee = await Employee.findById(req.params.empId);
+
+      // If profile picture is being updated and there is an existing one with public_id, delete it
+      if (req.body.profilePicture && employee.profilePicturePublicId) {
+        if (req.body.profilePicture !== employee.profilePicture) {
+            const { v2: cloudinary } = await import('cloudinary');
+            cloudinary.config({
+                cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+                api_key: process.env.CLOUDINARY_API_KEY,
+                api_secret: process.env.CLOUDINARY_API_SECRET
+            });
+            await cloudinary.uploader.destroy(employee.profilePicturePublicId);
+        }
+      }
+
       const updatedEmployee = await Employee.findByIdAndUpdate(
         req.params.empId,
         {
@@ -61,6 +77,7 @@ export const updateEmployee = async (req, res, next) => {
             address: req.body.address,
             phone: req.body.phone,
             profilePicture: req.body.profilePicture,
+            profilePicturePublicId: req.body.profilePicturePublicId,
             password: req.body.password,
           },
         },

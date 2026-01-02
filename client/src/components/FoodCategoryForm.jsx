@@ -1,13 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Toastify from "toastify-js";
+import axios from "axios";
 import "toastify-js/src/toastify.css";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
-import { app } from "../firebase"; // Import Firebase app instance
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { currencyConfig } from "../config/currency.config";
@@ -37,11 +31,24 @@ export default function FoodCategoryForm() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImageFile(file);
+      if (file.size > 2 * 1024 * 1024) {
+        setImageUploadError("File size exceeds 2MB");
+        setImageUploadProgress(null);
+        setImageFile(null);
+        Toastify({
+          text: "File size exceeds 2MB!",
+          backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+          duration: 3000,
+          gravity: "top",
+          position: "right",
+        }).showToast();
+      } else {
+        setImageFile(file);
+      }
     }
   };
 
-  // Upload image to Firebase when the image file changes
+  // Upload image to Cloudinary when the image file changes
   useEffect(() => {
     if (imageFile) {
       uploadImage();
@@ -51,46 +58,47 @@ export default function FoodCategoryForm() {
   const uploadImage = async () => {
     setImageUploading(true);
     setImageUploadError(null);
-    const storage = getStorage(app); // Firebase storage instance
-    const fileName = new Date().getTime() + imageFile.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, imageFile);
+    setImageUploadProgress(0);
 
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setImageUploadProgress(progress.toFixed(0));
-      },
-      (error) => {
-        setImageUploadError("Error uploading image. Please try again.");
-        setImageUploadProgress(null);
-        setImageUploading(false);
+    const data = new FormData();
+    data.append('image', imageFile);
 
-        Toastify({
-          text: "Error uploading image!",
-          backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
-          duration: 3000,
-          gravity: "top",
-          position: "right",
-        }).showToast();
-      },
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        setFormData((prev) => ({ ...prev, image: downloadURL }));
-        setImageUploading(false);
+    try {
+      const res = await axios.post('/api/upload/image', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          const progress = (progressEvent.loaded / progressEvent.total) * 100;
+          setImageUploadProgress(progress.toFixed(0));
+        },
+      });
 
-        Toastify({
-          text: "Image uploaded successfully!",
-          backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-          duration: 3000,
-          gravity: "top",
-          position: "right",
-        }).showToast();
-      }
-    );
-    
+      setFormData((prev) => ({ ...prev, image: res.data.secure_url }));
+      setImageUploading(false);
+
+      Toastify({
+        text: "Image uploaded successfully!",
+        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+      }).showToast();
+
+    } catch (error) {
+      setImageUploadError("Error uploading image. Please try again.");
+      setImageUploadProgress(null);
+      setImageUploading(false);
+
+      Toastify({
+        text: "Error uploading image!",
+        backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+      }).showToast();
+      console.error(error);
+    }
   };
 
   // Handle form submission
