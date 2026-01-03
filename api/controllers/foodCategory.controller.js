@@ -24,7 +24,7 @@ export const createFoodItem = async (req, res, next) => {
       return next(errorHandler(403, 'You are not allowed to create a food category'));
     }
 
-    const { foodName, description, category, price, image } = req.body;
+    const { foodName, description, category, price, images } = req.body;
 
     if (!foodName || foodName.trim() === '') {
       return next(new Error('Food name is required'));
@@ -35,7 +35,7 @@ export const createFoodItem = async (req, res, next) => {
       description,
       category,
       price,
-      image
+      images
     });
 
     const savedItem = await newFoodItem.save();
@@ -96,7 +96,7 @@ export const updateFoodItem = async (req, res, next) => {
       return next(errorHandler(403, 'You are not allowed to update this food category'));
     }
 
-    const { foodName, description, category, price, image } = req.body;
+    const { foodName, description, category, price, images } = req.body;
 
     const updatedItem = await FoodItem.findByIdAndUpdate(
       req.params.itemId,
@@ -106,7 +106,7 @@ export const updateFoodItem = async (req, res, next) => {
           description,
           category,
           price,
-          image,
+          images,
         },
       },
       { new: true }
