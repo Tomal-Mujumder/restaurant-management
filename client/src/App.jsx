@@ -31,6 +31,7 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 import PaymentFailed from "./pages/PaymentFailed.jsx";
 
 import PaymentSuccess from "./pages/PaymentSuccess.jsx";
+import Wishlist from "./pages/Wishlist.jsx";
 
 export default function App() {
   return (
@@ -70,6 +71,7 @@ export default function App() {
 <Route path="/Checkout/payment/success" element={<PaymentSuccess />} /> */}
 
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/wishlist" element={<Wishlist />} />
         {/* <Route path="/payment" element={<PaymentPage />} /> */}
 
         <Route element={<PrivateRoute />}>

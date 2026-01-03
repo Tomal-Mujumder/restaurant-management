@@ -190,6 +190,10 @@ export default function ProductDetails() {
     
     localStorage.setItem(wishlistKey, JSON.stringify(wishlist));
     setIsWishlisted(!isWishlisted);
+
+    // Dispatch events
+    window.dispatchEvent(new Event("wishlistUpdated"));
+    window.dispatchEvent(new Event("storage"));
   };
 
   const handleSubmitReview = async (e) => {

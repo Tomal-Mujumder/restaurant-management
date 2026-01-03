@@ -1,7 +1,7 @@
 import { Avatar, Dropdown, Navbar } from "flowbite-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { FaUser, FaShoppingBasket } from "react-icons/fa";
+import { FaUser, FaShoppingBasket, FaHeart } from "react-icons/fa";
 import { signoutSuccess } from "../redux/user/userSlice";
 import { useEffect, useState } from "react";
 import { MdOutlineShoppingCart } from "react-icons/md";
@@ -15,6 +15,7 @@ export default function Header() {
     
     // Cart logic
     const [cartCount, setCartCount] = useState(0);
+    const [wishlistCount, setWishlistCount] = useState(0);
 
     const updateCartCount = () => {
         if (currentUser && currentUser._id) {
@@ -24,8 +25,13 @@ export default function Header() {
             // Count total quantity, not just array length
             const totalItems = userCart.reduce((sum, item) => sum + item.quantity, 0);
             setCartCount(totalItems);
+
+            const wishlistKey = `wishlist_${userId}`;
+            const userWishlist = JSON.parse(localStorage.getItem(wishlistKey) || "[]");
+            setWishlistCount(userWishlist.length);
         } else {
             setCartCount(0);
+            setWishlistCount(0);
         }
     };
 
@@ -37,10 +43,12 @@ export default function Header() {
         
         // Custom event for same-tab updates
         window.addEventListener('cartUpdated', updateCartCount);
+        window.addEventListener('wishlistUpdated', updateCartCount);
 
         return () => {
             window.removeEventListener('storage', updateCartCount);
             window.removeEventListener('cartUpdated', updateCartCount);
+            window.removeEventListener('wishlistUpdated', updateCartCount);
         };
     }, [currentUser]);
 
@@ -101,6 +109,18 @@ export default function Header() {
                             {cartCount > 0 && (
                                 <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                                     {cartCount}
+                                </span>
+                            )}
+                        </Link>
+                    )}
+                    
+                    {/* Wishlist Icon (Visible only to logged-in users) */}
+                    {currentUser && (
+                        <Link to="/wishlist" className="relative">
+                           <FaHeart className="text-[#D4D4D4] text-2xl hover:text-white cursor-pointer" />
+                           {wishlistCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                    {wishlistCount}
                                 </span>
                             )}
                         </Link>
