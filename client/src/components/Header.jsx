@@ -21,7 +21,9 @@ export default function Header() {
             const userId = currentUser._id;
             const cartKey = `cart_${userId}`;
             const userCart = JSON.parse(localStorage.getItem(cartKey) || "[]");
-            setCartCount(userCart.length);
+            // Count total quantity, not just array length
+            const totalItems = userCart.reduce((sum, item) => sum + item.quantity, 0);
+            setCartCount(totalItems);
         } else {
             setCartCount(0);
         }
@@ -29,8 +31,17 @@ export default function Header() {
 
     useEffect(() => {
         updateCartCount();
+
+        // Listen for storage changes (when cart is updated from other components)
+        window.addEventListener('storage', updateCartCount);
+        
+        // Custom event for same-tab updates
         window.addEventListener('cartUpdated', updateCartCount);
-        return () => window.removeEventListener('cartUpdated', updateCartCount);
+
+        return () => {
+            window.removeEventListener('storage', updateCartCount);
+            window.removeEventListener('cartUpdated', updateCartCount);
+        };
     }, [currentUser]);
 
     const handleSignout = async () => {

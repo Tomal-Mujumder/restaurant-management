@@ -8,6 +8,7 @@ import { currencyConfig } from "../config/currency.config";
 
 export default function FoodCategoryForm() {
     const [formData, setFormData] = useState({
+        foodId: "",
         foodName: "",
         description: "",
         category: "Breakfast",
@@ -178,6 +179,7 @@ export default function FoodCategoryForm() {
                 }).showToast();
 
                 setFormData({
+                    foodId: "",
                     foodName: "",
                     description: "",
                     category: "Breakfast",
@@ -219,6 +221,19 @@ export default function FoodCategoryForm() {
 
                     <form onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 gap-4 text-sm gap-y-2 md:grid-cols-5">
+                            <div className="md:col-span-5">
+                                <label htmlFor="foodId">Food ID (Unique)</label>
+                                <input
+                                    type="text"
+                                    name="foodId"
+                                    value={formData.foodId}
+                                    onChange={handleChange}
+                                    placeholder="e.g., FOOD001, BBQ-CHICKEN-01"
+                                    className="w-full h-10 px-4 mt-1 border rounded bg-gray-50"
+                                    required
+                                />
+                            </div>
+
                             <div className="md:col-span-5">
                                 <label htmlFor="foodName">Food Name</label>
                                 <input

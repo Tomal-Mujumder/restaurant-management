@@ -31,12 +31,33 @@ const ShoppingCart = () => {
     }
   }, []);
 
+  const loadCart = () => {
+    const cartKey = `cart_${userId}`;
+    const currentCartList = JSON.parse(localStorage.getItem(cartKey) || "[]") || [];
+    
+    // Remove any duplicates (safety check)
+    const uniqueCart = [];
+    currentCartList.forEach(item => {
+      const existing = uniqueCart.find(c => c.id === item.id);
+      if (existing) {
+        existing.quantity += item.quantity;
+      } else {
+        uniqueCart.push({ ...item });
+      }
+    });
+
+    // If duplicates were found, save cleaned cart
+    if (uniqueCart.length !== currentCartList.length) {
+      localStorage.setItem(cartKey, JSON.stringify(uniqueCart));
+    }
+    
+    setCartItems(uniqueCart);
+    calculateTotal(uniqueCart);
+  };
+
   useEffect(() => {
-    // Retrieve cart items from local storage
-    const currentCartList = JSON.parse(localStorage.getItem(`cart_${userId}`) || "[]") || [];
-    if (currentCartList.length > 0) {
-      setCartItems(currentCartList);
-      calculateTotal(currentCartList);
+    if (userId) {
+      loadCart();
     }
   }, [userId]);
 
@@ -47,20 +68,24 @@ const ShoppingCart = () => {
   };
 
   const updateQuantity = (id, delta) => {
-    // Update the quantity of items in the cart
-    const updatedCart = cartItems.map((item) =>
-      item.id === id ? { ...item, quantity: item.quantity + delta } : item
-    );
-    const filteredCart = updatedCart.filter((item) => item.quantity > 0);
-    setCartItems(filteredCart);
-    calculateTotal(filteredCart);
-    updateLocalStorage(filteredCart);
-    window.dispatchEvent(new Event('cartUpdated'));
+    const updatedCart = cartItems.map((item) => {
+      if (item.id === id) {
+        const newQuantity = item.quantity + delta;
+        // Prevent quantity from going below 1
+        return { ...item, quantity: Math.max(1, newQuantity) };
+      }
+      return item;
+    });
+    
+    setCartItems(updatedCart);
+    calculateTotal(updatedCart);
+    updateLocalStorage(updatedCart);
   };
 
   const updateLocalStorage = (updatedCart) => {
-    // Update the cart in local storage
     localStorage.setItem(`cart_${userId}`, JSON.stringify(updatedCart));
+    // Dispatch event to update header cart count
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const removeItem = (id) => {
@@ -150,8 +175,11 @@ const ShoppingCart = () => {
             <div key={item.id} className="flex items-center mb-6">
               <img
                 className="object-cover w-20 h-20 mr-4 rounded-lg"
-                src={item.image}
+                src={item.image || 'https://i.pinimg.com/originals/2b/f0/e0/2bf0e06f26135c159a64591c817f639e.jpg'}
                 alt={item.foodName}
+                onError={(e) => {
+                  e.target.src = 'https://i.pinimg.com/originals/2b/f0/e0/2bf0e06f26135c159a64591c817f639e.jpg';
+                }}
               />
               <div className="flex flex-col">
                 <span className="text-lg font-medium">{item.foodName}</span>
@@ -163,18 +191,34 @@ const ShoppingCart = () => {
                   Remove
                 </button>
               </div>
-              <div className="ml-auto">
+              <div className="flex items-center ml-auto">
                 <button
                   onClick={() => updateQuantity(item.id, -1)}
-                  disabled={item.quantity === 1}
-                  className="px-3 py-2 bg-gray-200 rounded"
+                  disabled={item.quantity <= 1}
+                  className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   -
                 </button>
-                <span className="mx-2">{item.quantity}</span>
+                <input
+                  type="number"
+                  value={item.quantity}
+                  onChange={(e) => {
+                    const newQty = parseInt(e.target.value) || 1;
+                    if (newQty >= 1) {
+                      const updatedCart = cartItems.map(cartItem =>
+                        cartItem.id === item.id ? { ...cartItem, quantity: newQty } : cartItem
+                      );
+                      setCartItems(updatedCart);
+                      calculateTotal(updatedCart);
+                      updateLocalStorage(updatedCart);
+                    }
+                  }}
+                  min="1"
+                  className="w-16 mx-2 text-center border border-gray-300 rounded"
+                />
                 <button
                   onClick={() => updateQuantity(item.id, 1)}
-                  className="px-3 py-2 bg-gray-200 rounded"
+                  className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
                 >
                   +
                 </button>

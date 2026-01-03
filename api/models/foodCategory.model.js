@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const foodCategorySchema = new mongoose.Schema(
     {
+        foodId: {
+            type: String,
+            required: true,
+            unique: true
+        },
         foodName: {
             type: String,
             required: true,

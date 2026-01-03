@@ -1,5 +1,6 @@
 import FoodItem from '../models/foodCategory.model.js';
 import { errorHandler } from '../utils/error.js';
+import { deleteImageFromCloudinary } from '../utils/cloudinaryHelper.js';
 
 // Function to find food item by ID
 export const findFoodById = async (req, res, next) => {
@@ -24,13 +25,18 @@ export const createFoodItem = async (req, res, next) => {
       return next(errorHandler(403, 'You are not allowed to create a food category'));
     }
 
-    const { foodName, description, category, price, images } = req.body;
+    const { foodId, foodName, description, category, price, images } = req.body;
+
+    if (!foodId || foodId.trim() === '') {
+      return next(new Error('Food ID is required'));
+    }
 
     if (!foodName || foodName.trim() === '') {
       return next(new Error('Food name is required'));
     }
 
     const newFoodItem = new FoodItem({
+      foodId,
       foodName,
       description,
       category,
@@ -80,6 +86,21 @@ export const deleteFoodItem = async (req, res, next) => {
       return next(errorHandler(403, 'You are not allowed to delete this food category'));
     }
 
+    const foodItem = await FoodItem.findById(req.params.itemId);
+    if (!foodItem) {
+      return next(errorHandler(404, 'Food item not found'));
+    }
+
+    // Delete images from Cloudinary
+    if (foodItem.images && foodItem.images.length > 0) {
+      for (const imageUrl of foodItem.images) {
+        // Skip default image if it's the specific pinimg one, though the helper handles failures gracefully
+        if (!imageUrl.includes('pinimg.com')) {
+           await deleteImageFromCloudinary(imageUrl);
+        }
+      }
+    }
+
     await FoodItem.findByIdAndDelete(req.params.itemId);
     res.status(200).json({ message: 'Food category deleted successfully' });
   } catch (error) {
@@ -96,12 +117,30 @@ export const updateFoodItem = async (req, res, next) => {
       return next(errorHandler(403, 'You are not allowed to update this food category'));
     }
 
-    const { foodName, description, category, price, images } = req.body;
+    const { foodId, foodName, description, category, price, images } = req.body;
+
+    const oldFoodItem = await FoodItem.findById(req.params.itemId);
+    if (!oldFoodItem) {
+      return next(errorHandler(404, 'Food item not found'));
+    }
+
+    // Cleanup removed images
+    if (oldFoodItem.images && oldFoodItem.images.length > 0) {
+        const newImages = images || [];
+        const imagesToDelete = oldFoodItem.images.filter(img => !newImages.includes(img));
+        
+        for (const imageUrl of imagesToDelete) {
+             if (!imageUrl.includes('pinimg.com')) {
+                await deleteImageFromCloudinary(imageUrl);
+             }
+        }
+    }
 
     const updatedItem = await FoodItem.findByIdAndUpdate(
       req.params.itemId,
       {
         $set: {
+          foodId,
           foodName,
           description,
           category,

@@ -60,7 +60,12 @@ export default function Item() {
     const cartKey = `cart_${userId}`;
     const currentCartList = JSON.parse(localStorage.getItem(cartKey) || "[]");
 
-    if (!currentCartList.some((cartItem) => cartItem.id === item._id)) {
+    // Check if item exists using consistent ID property
+    const existingItemIndex = currentCartList.findIndex((cartItem) => cartItem.id === item._id);
+
+    if (existingItemIndex > -1) {
+      currentCartList[existingItemIndex].quantity += 1;
+    } else {
       currentCartList.push({
         id: item._id,
         quantity: 1,
@@ -68,19 +73,14 @@ export default function Item() {
         foodName: item.foodName,
         image: item.image,
       });
-    } else {
-      currentCartList.forEach((cartItem) => {
-        if (cartItem.id === item._id) {
-          cartItem.quantity += 1;
-        }
-      });
     }
 
     localStorage.setItem(cartKey, JSON.stringify(currentCartList));
-    setCartCount(currentCartList.length);
+    setCartCount(currentCartList.length); // This might be redundant if the header handles it, but keeps local state in sync if used
     
     // Dispatch event AFTER localStorage update
     window.dispatchEvent(new Event('cartUpdated'));
+    window.dispatchEvent(new Event("storage"));
     
     showToast("Item added to cart!");
   };
@@ -158,46 +158,34 @@ export default function Item() {
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {foodItems.map((item) => (
-                <div
-                  key={item._id}
-                  className="relative flex flex-col text-gray-700 bg-white shadow-md bg-clip-border rounded-xl w-full h-[300px] overflow-hidden min-w-[300px] min-h-[300px]"
-                >
-                  <div className="relative mx-2 mt-2 overflow-hidden text-gray-700 bg-white bg-clip-border rounded-xl h-[150px]">
-                    <img
-                      src={item.image}
-                      alt={item.foodName}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                  <div className="p-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="block font-sans text-sm font-medium leading-relaxed text-blue-gray-900">
-                        {item.foodName}
-                      </p>
-                      <p className="block font-sans text-sm font-medium leading-relaxed text-blue-gray-900">
-                        {formatCurrencyWithCode(item.price)}
-                      </p>
-                    </div>
-                    <p className="block font-sans text-xs font-normal leading-normal text-gray-700 opacity-75">
-                      {item.description}
-                    </p>
-                  </div>
-                  <div className="absolute flex justify-between bottom-3 left-3 right-3">
-                      <button
-                        onClick={() => addToCart(item)}
-                        className="px-4 py-2 font-semibold text-white bg-green-600 rounded hover:bg-green-500"
-                      >
-                        Add to Cart
-                      </button>
-                      <button
-                        onClick={() => handleBuyNow(item)}
-                        className="px-4 py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-500"
-                      >
-                        Buy Now
-                      </button>
-                    </div>
-                </div>
-              ))}
+                    <Link to={`/item/${item._id}`} key={item._id} className="block transition-transform hover:-translate-y-1">
+                        <div className="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 h-full flex flex-col">
+                            <div className="h-48 overflow-hidden">
+                                <img
+                                    className="object-cover w-full h-full"
+                                    src={item.images && item.images.length > 0 ? item.images[0] : item.image}
+                                    alt={item.foodName}
+                                />
+                            </div>
+                            <div className="p-5 flex flex-col flex-grow">
+                                <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                                    {item.foodName}
+                                </h5>
+                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400 line-clamp-2">
+                                    {item.description}
+                                </p>
+                                <div className="mt-auto flex items-center justify-between">
+                                    <span className="text-xl font-bold text-gray-900 dark:text-white">
+                                        {formatCurrencyWithCode(item.price)}
+                                    </span>
+                                    <span className="text-sm text-blue-600 hover:underline">
+                                        View Details &rarr;
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+                ))}
             </div>
           )}
         </div>

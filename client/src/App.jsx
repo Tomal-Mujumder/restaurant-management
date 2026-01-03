@@ -6,6 +6,7 @@ import Dashboard from "./pages/DashBoard.jsx";
 import SignIn from "./pages/SignIn.jsx";
 import Header from "./components/Header.jsx";
 import Item from "./pages/Item.jsx";
+import ProductDetails from "./pages/ProductDetails.jsx";
 import MemberView from "./pages/MemberView.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import EmployeeLogin from "./pages/EmployeeLogin.jsx";
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/employee-login" element={<EmployeeLogin />} />
 
         <Route path="/item" element={<Item />} />
+        <Route path="/item/:foodId" element={<ProductDetails />} />
         {/* <Route path="/shoppingCart" element={<ShoppingCart />} /> */}
 
         <Route path="/shoppingCart" element={<Shopping />} />

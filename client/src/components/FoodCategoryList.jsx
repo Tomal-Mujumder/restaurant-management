@@ -14,6 +14,7 @@ export default function FoodCategoryList() {
     const [itemToDelete, setCategoryToDelete] = useState(null);
     const [itemToEdit, setCategoryToEdit] = useState(null);
     const [formData, setFormData] = useState({
+        foodId: "",
         foodName: "",
         description: "",
         category: "Breakfast",
@@ -104,6 +105,7 @@ export default function FoodCategoryList() {
         }
 
         setFormData({
+            foodId: item.foodId,
             foodName: item.foodName,
             description: item.description,
             category: item.category,
@@ -334,6 +336,7 @@ export default function FoodCategoryList() {
                             <th scope="col" className="px-16 py-3">
                                 <span className="sr-only">Image</span>
                             </th>
+                            <th scope="col" className="px-6 py-3">Food ID</th>
                             <th scope="col" className="px-6 py-3">Food Name</th>
                             <th scope="col" className="px-6 py-3">Category</th>
                             <th scope="col" className="px-6 py-3">Description</th>
@@ -354,6 +357,9 @@ export default function FoodCategoryList() {
                                         alt={item.foodName}
                                         onClick={() => openGallery(item)}
                                     />
+                                </td>
+                                <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                                    {item.foodId}
                                 </td>
                                 <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                                     {item.foodName}
@@ -399,6 +405,17 @@ export default function FoodCategoryList() {
                         }}
                     >
                         <div className="grid grid-cols-1 gap-4 text-sm gap-y-2 md:grid-cols-5">
+                            <div className="md:col-span-5">
+                                <label htmlFor="foodId">Food ID</label>
+                                <input
+                                    type="text"
+                                    name="foodId"
+                                    value={formData.foodId}
+                                    onChange={handleChange}
+                                    className="w-full h-10 px-4 mt-1 border rounded bg-white"
+                                    required
+                                />
+                            </div>
                             <div className="md:col-span-5">
                                 <label htmlFor="foodName">Food Name</label>
                                 <input
