@@ -94,7 +94,7 @@ export default function Header() {
                     </Link>
                     <Link to="/item">
                         <li className={`text-base md:text-lg font-bold font-['Poppins'] uppercase hover:text-black ${path === '/item' ? 'text-black' : 'text-white'}`}>
-                            Items
+                            View Menu
                         </li>
                     </Link>
                 </ul>
