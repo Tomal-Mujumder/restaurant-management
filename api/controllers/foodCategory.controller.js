@@ -163,11 +163,24 @@ export const updateFoodItem = async (req, res, next) => {
 // Get all food items or filter by search query
 export const getFoodItem = async (req, res, next) => {
   try {
-    const searchQuery = req.query.search || ""; // Get the search term from the query params
-    const regex = new RegExp(searchQuery, 'i'); // Case-insensitive regex for searching
-    const foodItems = await FoodItem.find({ foodName: regex });
+    const limit = parseInt(req.query.limit) || undefined;
+    const sortDirection = req.query.sort === 'asc' ? 1 : -1;
+    const searchQuery = req.query.search || ""; 
     
-    if (foodItems.length === 0) {
+    // Build query object
+    const query = {};
+    if (searchQuery) {
+      query.foodName = { $regex: searchQuery, $options: 'i' };
+    }
+
+    const foodItems = await FoodItem.find(query)
+      .sort({ createdAt: sortDirection })
+      .limit(limit);
+    
+    // For specific search queries that return no results, we might want to return 404, 
+    // but for a general "get all" (even with limit), returning an empty array is often valid.
+    // However, sticking to the existing pattern:
+    if (foodItems.length === 0 && searchQuery) {
       return res.status(404).json({ message: 'No food items found' });
     }
     

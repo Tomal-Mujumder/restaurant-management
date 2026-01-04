@@ -16,6 +16,7 @@ import checkoutShopRoutes from "./routes/checkoutShop.routes.js";
 import sslcommerzRoutes from "./routes/sslcommerz.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
+import statsRoutes from "./routes/stats.routes.js";
 
 
 // import shippingRoutes from "./routes/shipping.routes.js";
@@ -61,6 +62,7 @@ app.listen(3000, () => {
   app.use("/api/sslcommerz", sslcommerzRoutes);
   app.use("/api/upload", uploadRoutes);
   app.use("/api/reviews", reviewRoutes);
+  app.use("/api/stats", statsRoutes);
   // app.use("/api/shipping", shippingRoutes);
 
 
