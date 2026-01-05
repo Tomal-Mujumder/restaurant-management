@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { HiOutlineArrowRight, HiCurrencyBangladeshi } from 'react-icons/hi';
+import { HiOutlineArrowRight } from 'react-icons/hi';
+import { formatCurrencyWithCode } from '../utils/currency';
 
 export default function FeaturedFoodCard({ food }) {
   const [imageError, setImageError] = useState(false);
@@ -13,7 +14,7 @@ export default function FeaturedFoodCard({ food }) {
       {/* Image Container */}
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
-          src={imageError ? fallbackImage : (food.images[0] || fallbackImage)}
+          src={imageError ? fallbackImage : (food.images?.[0] || food.image || fallbackImage)}
           alt={food.foodName}
           onError={() => setImageError(true)}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -37,13 +38,12 @@ export default function FeaturedFoodCard({ food }) {
         </p>
 
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="flex items-center text-[#e93b92] font-bold text-lg">
-            <span className="mr-0.5">TK</span>
-            {food.price}
+          <div className="text-[#e93b92] font-bold text-lg">
+             {formatCurrencyWithCode(food.price)}
           </div>
           
           <Link 
-            to={`/foods/${food._id}`}
+            to={`/item/${food._id}`}
             className="flex items-center gap-2 text-sm font-semibold text-gray-700 transition-all group-hover:text-[#e93b92] group-hover:translate-x-1"
           >
             Details <HiOutlineArrowRight />

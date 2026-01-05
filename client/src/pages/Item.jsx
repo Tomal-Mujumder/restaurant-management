@@ -6,6 +6,8 @@ import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css"; 
 import { formatCurrencyWithCode } from "../utils/currency";
 
+import FeaturedFoodCard from "../components/FeaturedFoodCard";
+
 export default function Item() {
   const [foodItems, setFoodItems] = useState([]);
   const [cartCount, setCartCount] = useState(0);
@@ -157,34 +159,8 @@ export default function Item() {
             <p className="text-gray-600 dark:text-gray-400">No items available</p>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {foodItems.map((item) => (
-                    <Link to={`/item/${item._id}`} key={item._id} className="block transition-transform hover:-translate-y-1">
-                        <div className="max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 h-full flex flex-col">
-                            <div className="h-48 overflow-hidden">
-                                <img
-                                    className="object-cover w-full h-full"
-                                    src={item.images && item.images.length > 0 ? item.images[0] : item.image}
-                                    alt={item.foodName}
-                                />
-                            </div>
-                            <div className="p-5 flex flex-col flex-grow">
-                                <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                                    {item.foodName}
-                                </h5>
-                                <p className="mb-3 font-normal text-gray-700 dark:text-gray-400 line-clamp-2">
-                                    {item.description}
-                                </p>
-                                <div className="mt-auto flex items-center justify-between">
-                                    <span className="text-xl font-bold text-gray-900 dark:text-white">
-                                        {formatCurrencyWithCode(item.price)}
-                                    </span>
-                                    <span className="text-sm text-blue-600 hover:underline">
-                                        View Details &rarr;
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </Link>
+                {foodItems.map((item) => (
+                  <FeaturedFoodCard key={item._id} food={item} />
                 ))}
             </div>
           )}
