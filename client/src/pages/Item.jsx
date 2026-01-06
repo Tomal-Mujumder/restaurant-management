@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { MdOutlineShoppingCart } from "react-icons/md";
-import Toastify from "toastify-js"; 
-import "toastify-js/src/toastify.css"; 
+import Toastify from "toastify-js";
+import "toastify-js/src/toastify.css";
 import { formatCurrencyWithCode } from "../utils/currency";
 
 import FeaturedFoodCard from "../components/FeaturedFoodCard";
@@ -18,12 +18,15 @@ export default function Item() {
   // Fetch all food items based on search
   const fetchFoodItems = async () => {
     try {
-      const response = await fetch(`/api/foods/getAllFoods?search=${searchTerm}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      
+      const response = await fetch(
+        `/api/foods/getAllFoods?search=${searchTerm}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
       if (!response.ok) {
         throw new Error("Failed to fetch food items");
       }
@@ -46,8 +49,10 @@ export default function Item() {
   const updateCartCount = () => {
     const userId = currentUser?._id;
     if (userId) {
-        const userCart = JSON.parse(localStorage.getItem(`cart_${userId}`) || "[]");
-        setCartCount(userCart.length);
+      const userCart = JSON.parse(
+        localStorage.getItem(`cart_${userId}`) || "[]"
+      );
+      setCartCount(userCart.length);
     }
   };
 
@@ -63,7 +68,9 @@ export default function Item() {
     const currentCartList = JSON.parse(localStorage.getItem(cartKey) || "[]");
 
     // Check if item exists using consistent ID property
-    const existingItemIndex = currentCartList.findIndex((cartItem) => cartItem.id === item._id);
+    const existingItemIndex = currentCartList.findIndex(
+      (cartItem) => cartItem.id === item._id
+    );
 
     if (existingItemIndex > -1) {
       currentCartList[existingItemIndex].quantity += 1;
@@ -79,11 +86,11 @@ export default function Item() {
 
     localStorage.setItem(cartKey, JSON.stringify(currentCartList));
     setCartCount(currentCartList.length); // This might be redundant if the header handles it, but keeps local state in sync if used
-    
+
     // Dispatch event AFTER localStorage update
-    window.dispatchEvent(new Event('cartUpdated'));
+    window.dispatchEvent(new Event("cartUpdated"));
     window.dispatchEvent(new Event("storage"));
-    
+
     showToast("Item added to cart!");
   };
 
@@ -95,7 +102,7 @@ export default function Item() {
       return;
     }
     addToCart(item);
-    window.dispatchEvent(new Event('cartUpdated'));
+    window.dispatchEvent(new Event("cartUpdated"));
     navigate(`/shoppingCart`);
   };
 
@@ -126,8 +133,18 @@ export default function Item() {
         <div className="flex items-center gap-4"></div>
         <div className="relative max-w-md">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <svg
+              className="w-5 h-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
           </div>
           <input
@@ -137,7 +154,7 @@ export default function Item() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-</div>
+        </div>
         <div className="relative flex items-center">
           <Link to={`/shoppingCart`}>
             <span className="text-3xl text-black">
@@ -151,17 +168,19 @@ export default function Item() {
       </div>
 
       {/* Main content */}
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center pb-20">
         <div className="max-w-[1200px] mx-auto">
           {error ? (
             <p className="text-red-600 dark:text-red-400">{error}</p>
           ) : foodItems.length === 0 ? (
-            <p className="text-gray-600 dark:text-gray-400">No items available</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              No items available
+            </p>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {foodItems.map((item) => (
-                  <FeaturedFoodCard key={item._id} food={item} />
-                ))}
+              {foodItems.map((item) => (
+                <FeaturedFoodCard key={item._id} food={item} />
+              ))}
             </div>
           )}
         </div>
