@@ -83,7 +83,7 @@ export default function Header() {
                 path === "/" ? "text-black" : "text-white"
               }`}
             >
-              Menu
+              Home
             </li>
           </Link>
           <Link to="/about">
@@ -101,9 +101,14 @@ export default function Header() {
                 path === "/item" ? "text-black" : "text-white"
               }`}
             >
-              View Menu
+              Menu
             </li>
           </Link>
+          <a href="/#reservations">
+            <li className="text-base md:text-lg font-bold font-['Poppins'] uppercase hover:text-black text-white cursor-pointer">
+              Reservations
+            </li>
+          </a>
         </ul>
 
         {/* Right Side Icons (User & Cart) */}
