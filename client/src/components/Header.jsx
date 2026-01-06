@@ -64,6 +64,11 @@ export default function Header() {
       if (!res.ok) {
         console.log(data.message);
       } else {
+        const userId = currentUser?._id;
+        if (userId) {
+          localStorage.removeItem(`cart_${userId}`);
+          localStorage.removeItem("userId");
+        }
         dispatch(signoutSuccess());
         setCartCount(0);
         navigate(`/`);

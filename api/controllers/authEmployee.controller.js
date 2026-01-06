@@ -1,9 +1,10 @@
-import Employee from "../models/employee.model.js"
+import Employee from "../models/employee.model.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { errorHandler } from "../utils/error.js";
 export const create = async (req, res, next) => {
-  const { firstname, lastname, address , email, nic, phone, role, shift} = req.body;
+  const { firstname, lastname, address, email, nic, phone, role, shift } =
+    req.body;
 
   const nicRegex = /^(?:[0-9]{9}[VvXx]||[0-9]{12})$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -21,15 +22,14 @@ export const create = async (req, res, next) => {
     lastname === "" ||
     address === "" ||
     email === "" ||
-    nic === ""  ||
-    role === "" 
+    nic === "" ||
+    role === ""
   ) {
     return next(errorHandler(400, "All are required"));
   }
-  
 
-   // Check NIC validity
-   if (!nicRegex.test(nic)) {
+  // Check NIC validity
+  if (!nicRegex.test(nic)) {
     return next(errorHandler(400, "NIC is invalid"));
   }
 
@@ -43,19 +43,28 @@ export const create = async (req, res, next) => {
     return next(errorHandler(400, "Phone number must be exactly 11 digits"));
   }
 
-   // Check if data already exists in the database
-   const existingEmployeeByEmail = await Employee.findOne({ email });
-   const existingEmployeeByPhone = await Employee.findOne({ phone });
-   const existingEmployeeByNIC = await Employee.findOne({ nic });
+  // Check if data already exists in the database
+  const existingEmployeeByEmail = await Employee.findOne({ email });
+  const existingEmployeeByPhone = await Employee.findOne({ phone });
+  const existingEmployeeByNIC = await Employee.findOne({ nic });
 
-   if (existingEmployeeByEmail || existingEmployeeByPhone || existingEmployeeByNIC) {
-    return next(errorHandler(400,"Employee with this email, phone number, or NIC already exists"));
-   }
-  
+  if (
+    existingEmployeeByEmail ||
+    existingEmployeeByPhone ||
+    existingEmployeeByNIC
+  ) {
+    return next(
+      errorHandler(
+        400,
+        "Employee with this email, phone number, or NIC already exists"
+      )
+    );
+  }
 
   const hashedPassword = bcryptjs.hashSync(nic, 10);
   const fullName = firstname + lastname;
-  const nameToUsername = fullName.split(" ").join("") +  + Math.random().toString(9).slice(-4);
+  const nameToUsername =
+    fullName.split(" ").join("") + +Math.random().toString(9).slice(-4);
   const newEmployee = new Employee({
     firstname,
     lastname,
@@ -66,11 +75,12 @@ export const create = async (req, res, next) => {
     username: nameToUsername,
     password: hashedPassword,
     role,
-    
   });
   try {
     await newEmployee.save();
-    res.status(201).json({ success: true, message: "Employee created successfully" });
+    res
+      .status(201)
+      .json({ success: true, message: "Employee created successfully" });
   } catch (error) {
     next(error);
   }
@@ -98,6 +108,7 @@ export const login = async (req, res, next) => {
     const token = jwt.sign(
       {
         empId: validEmployee._id,
+        id: validEmployee._id, // Standardize id for easier consumption
         isAdmin: validEmployee.isAdmin,
         role: validEmployee.role,
         username: validEmployee.username,
@@ -105,8 +116,8 @@ export const login = async (req, res, next) => {
       },
       process.env.JWT_SECRET
     );
-    
-    const { password: pass, ...rest} = validEmployee._doc;
+
+    const { password: pass, ...rest } = validEmployee._doc;
 
     res
       .status(200)
