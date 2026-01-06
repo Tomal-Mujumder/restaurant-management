@@ -1,11 +1,6 @@
-import {
-  HiArrowSmRight,
-  HiUser,
-  HiOutlineUserGroup,
-} from "react-icons/hi";
-import {
-  MdDashboard,
-} from "react-icons/md";
+import { HiArrowSmRight, HiUser, HiOutlineUserGroup } from "react-icons/hi";
+import { MdDashboard } from "react-icons/md";
+import { FaCalendarAlt } from "react-icons/fa";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { LuUsers } from "react-icons/lu";
 import { Link, useLocation } from "react-router-dom";
@@ -17,7 +12,7 @@ export default function AdminDashSideBar() {
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const location = useLocation();
-  
+
   const [dropdowns, setDropdowns] = useState({
     isOpenEmp: false,
     isOpenServ: false,
@@ -68,45 +63,51 @@ export default function AdminDashSideBar() {
             </div>
           </Link>
         )}
-   
-       {currentUser?.role === "Manager" && (
-        <>
-              <Link to="/admin-dashboard?tab=add-foods">
+
+        {currentUser?.role === "Manager" && (
+          <>
+            <Link to="/admin-dashboard?tab=add-foods">
               <div
                 className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
                   activeTab === "add-foods" ? "bg-[#707070]" : ""
                 }`}
-               >
+              >
                 <MdDashboard color="#D4D4D4" />
-                <span className="text-[15px] ml-4 text-[#D4D4D4]"> Add Foods</span>
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  {" "}
+                  Add Foods
+                </span>
               </div>
-              </Link>   
+            </Link>
 
-
-              <Link to="/admin-dashboard?tab=view-foods">
+            <Link to="/admin-dashboard?tab=view-foods">
               <div
                 className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
                   activeTab === "view-foods" ? "bg-[#707070]" : ""
                 }`}
-               >
+              >
                 <MdDashboard color="#D4D4D4" />
-                <span className="text-[15px] ml-4 text-[#D4D4D4]"> View Foods</span>
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  {" "}
+                  View Foods
+                </span>
               </div>
-              </Link>
+            </Link>
 
-              <Link to="/admin-dashboard?tab=payment-manager">
+            <Link to="/admin-dashboard?tab=payment-manager">
               <div
                 className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
                   activeTab === "payment-manager" ? "bg-[#707070]" : ""
                 }`}
               >
                 <LuUsers color="#D4D4D4" />
-                <span className="text-[15px] ml-4 text-[#D4D4D4]">Payments </span>
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  Payments{" "}
+                </span>
               </div>
             </Link>
-        </>
-             )}
-
+          </>
+        )}
 
         {currentUser.isAdmin && (
           <>
@@ -117,28 +118,49 @@ export default function AdminDashSideBar() {
                 }`}
               >
                 <MdDashboard color="#D4D4D4" />
-                <span className="text-[15px] ml-4 text-[#D4D4D4]">Dashboard</span>
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  Dashboard
+                </span>
               </div>
             </Link>
             {/* <Route path="/payment-manager" element={<PaymentManager />} /> */}
 
-           
-            
             <Link to="/admin-dashboard?tab=admin-users">
               <div
                 className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
                   activeTab === "admin-users" ? "bg-[#707070]" : ""
                 }`}
-               >
+              >
                 <MdDashboard color="#D4D4D4" />
                 <span className="text-[15px] ml-4 text-[#D4D4D4]"> Users</span>
               </div>
-              </Link>     
+            </Link>
 
-                    
+            <Link to="/admin-dashboard?tab=payment-manager">
+              <div
+                className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
+                  activeTab === "payment-manager" ? "bg-[#707070]" : ""
+                }`}
+              >
+                <LuUsers color="#D4D4D4" />
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  Payments{" "}
+                </span>
+              </div>
+            </Link>
 
-
-            
+            <Link to="/admin-dashboard?tab=reservations">
+              <div
+                className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
+                  activeTab === "reservations" ? "bg-[#707070]" : ""
+                }`}
+              >
+                <FaCalendarAlt color="#D4D4D4" />
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  Reservation
+                </span>
+              </div>
+            </Link>
 
             {/* Employee Management */}
             <div
@@ -149,7 +171,9 @@ export default function AdminDashSideBar() {
             >
               <HiOutlineUserGroup color="#D4D4D4" />
               <div className="flex items-center justify-between w-full">
-                <span className="text-[15px] ml-4 text-[#D4D4D4]">Employees</span>
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  Employees
+                </span>
                 <span className="text-sm">
                   {dropdowns.isOpenEmp ? <IoIosArrowUp /> : <IoIosArrowDown />}
                 </span>
@@ -158,7 +182,6 @@ export default function AdminDashSideBar() {
 
             {dropdowns.isOpenEmp && (
               <div className="text-left text-sm font-light w-4/5 mx-auto text-[#D4D4D4] p-2">
-               
                 <Link to="/admin-dashboard?tab=addemployee">
                   <h1
                     className={`cursor-pointer p-2 hover:bg-[#707070] rounded-md mt-1 ${
@@ -177,12 +200,6 @@ export default function AdminDashSideBar() {
                     Managers
                   </h1>
                 </Link>
-
-           
-            
-             
-
-
               </div>
             )}
           </>

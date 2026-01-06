@@ -7,10 +7,11 @@ import AdminDasManagers from "../components/AdminDashManager.jsx";
 import MemberDashProfile from "../components/MemberDashProfile.jsx";
 import DashUsers from "../components/DashUsers.jsx";
 import DashboardComponent from "../components/DashboardComponent.jsx";
-import SearchEmployee from "../components/SearchEmployee.jsx"; 
+import SearchEmployee from "../components/SearchEmployee.jsx";
 import FoodCategoryForm from "../components/FoodCategoryForm.jsx";
 import FoodCategoryList from "../components/FoodCategoryList.jsx";
 import PaymentManager from "../components/PaymentManager.jsx";
+import ReservationManager from "../components/ReservationManager.jsx";
 
 export default function AdminDashboard() {
   const location = useLocation();
@@ -39,7 +40,6 @@ export default function AdminDashboard() {
 
   return (
     <>
-
       <div className="min-h-screen flex flex-col md:flex-row bg-[#d4d4d4]">
         <div className="md:w-56">
           <AdminDashSideBar />
@@ -58,11 +58,7 @@ export default function AdminDashboard() {
           {tab === "view-foods" && <FoodCategoryList />}
 
           {tab === "payment-manager" && <PaymentManager />}
-
-
-
-          
-       
+          {tab === "reservations" && <ReservationManager />}
         </div>
       </div>
     </>
