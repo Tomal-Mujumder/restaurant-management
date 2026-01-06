@@ -27,20 +27,33 @@ export default function Header() {
     }
   };
 
+  const updateWishlistCount = () => {
+    if (currentUser?._id) {
+      const userId = currentUser._id;
+      const userWishlist = JSON.parse(
+        localStorage.getItem(`wishlist_${userId}`) || "[]"
+      );
+      setWishlistCount(userWishlist.length);
+    }
+  };
+
   useEffect(() => {
     updateCartCount();
+    updateWishlistCount();
 
     // Listen for storage changes (when cart is updated from other components)
     window.addEventListener("storage", updateCartCount);
+    window.addEventListener("storage", updateWishlistCount);
 
     // Custom event for same-tab updates
     window.addEventListener("cartUpdated", updateCartCount);
-    window.addEventListener("wishlistUpdated", updateCartCount);
+    window.addEventListener("wishlistUpdated", updateWishlistCount);
 
     return () => {
       window.removeEventListener("storage", updateCartCount);
+      window.removeEventListener("storage", updateWishlistCount);
       window.removeEventListener("cartUpdated", updateCartCount);
-      window.removeEventListener("wishlistUpdated", updateCartCount);
+      window.removeEventListener("wishlistUpdated", updateWishlistCount);
     };
   }, [currentUser]);
 
