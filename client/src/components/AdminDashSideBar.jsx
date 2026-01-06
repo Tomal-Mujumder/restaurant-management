@@ -106,8 +106,39 @@ export default function AdminDashSideBar() {
                 </span>
               </div>
             </Link>
+
+            <Link to="/admin-dashboard?tab=reservations">
+              <div
+                className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
+                  activeTab === "reservations" ? "bg-[#707070]" : ""
+                }`}
+              >
+                <FaCalendarAlt color="#D4D4D4" />
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  Reservation
+                </span>
+              </div>
+            </Link>
           </>
         )}
+
+        {/* Standard Employee with Role but not Manager/Admin (implied by just having role and not matching others, or explicit check) */}
+        {currentUser?.role &&
+          currentUser?.role !== "Manager" &&
+          !currentUser?.isAdmin && (
+            <Link to="/admin-dashboard?tab=reservations">
+              <div
+                className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
+                  activeTab === "reservations" ? "bg-[#707070]" : ""
+                }`}
+              >
+                <FaCalendarAlt color="#D4D4D4" />
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  Reservation
+                </span>
+              </div>
+            </Link>
+          )}
 
         {currentUser.isAdmin && (
           <>
