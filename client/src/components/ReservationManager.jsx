@@ -6,7 +6,10 @@ import {
   FaTimesCircle,
   FaExclamationTriangle,
   FaTimes,
+  FaFileDownload,
 } from "react-icons/fa";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const ReservationManager = () => {
   const [reservations, setReservations] = useState([]);
@@ -244,12 +247,86 @@ const ReservationManager = () => {
     (r) => r.status === "cancelled"
   ).length;
 
+  // Generate Daily Report
+  const generateDailyReport = () => {
+    const todayStr = new Date().toLocaleDateString(); // Local date string for comparison
+    // Filter for today's confirmed reservations
+    const dailyReservations = reservations.filter((res) => {
+      const resDate = new Date(res.reservationDate).toLocaleDateString();
+      return res.status === "confirmed" && resDate === todayStr;
+    });
+
+    if (dailyReservations.length === 0) {
+      toast.info("No confirmed reservations found for today.");
+      return;
+    }
+
+    const doc = new jsPDF();
+
+    // Title
+    doc.setFontSize(18);
+    doc.text(`Daily Reservation Report - ${todayStr}`, 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text("Confirmed Bookings Only", 14, 30);
+
+    // Table Data
+    const tableColumn = [
+      "Time",
+      "Customer Name",
+      "Contact",
+      "Party",
+      "Special Requests",
+    ];
+    const tableRows = [];
+
+    // Sort by time
+    dailyReservations.sort((a, b) => {
+      // Simple time string comparison might fail for AM/PM mixed, best to use date object if possible
+      // But our reservationTime is a string "11:00 AM". Let's rely on basic sort or the already sorted list if robust.
+      // Re-sorting by date object for safety
+      return new Date(a.reservationDate) - new Date(b.reservationDate);
+    });
+
+    dailyReservations.forEach((res) => {
+      const rowData = [
+        res.reservationTime,
+        res.customerName,
+        `${res.phoneNumber}`,
+        res.partySize,
+        res.specialRequests || "-",
+      ];
+      tableRows.push(rowData);
+    });
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 35,
+      theme: "grid",
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [22, 163, 74] }, // Green header
+    });
+
+    doc.save(`reservations_${todayStr.replace(/\//g, "-")}.pdf`);
+    toast.success("Daily report downloaded successfully!");
+  };
+
   return (
     <div className="flex flex-col items-center min-h-screen px-4 py-8 bg-gray-100">
       <div className="w-full max-w-7xl p-6 bg-white rounded-lg shadow-lg">
-        <h1 className="mb-6 text-3xl font-bold text-center text-gray-800">
-          Reservation Management
-        </h1>
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-800">
+            Reservation Management
+          </h1>
+          <button
+            onClick={generateDailyReport}
+            className="mt-4 md:mt-0 flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors shadow-md"
+          >
+            <FaFileDownload className="mr-2" />
+            Download Today's Report
+          </button>
+        </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
