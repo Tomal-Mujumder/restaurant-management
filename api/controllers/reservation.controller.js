@@ -81,11 +81,41 @@ export const updateReservationStatus = async (req, res, next) => {
     );
   }
   try {
+    const {
+      customerName,
+      email,
+      phoneNumber,
+      partySize,
+      reservationDate,
+      reservationTime,
+      specialRequests,
+      status,
+    } = req.body;
+
+    // Optional: Validate date if provided
+    if (reservationDate) {
+      const selectedDate = new Date(reservationDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (selectedDate < today) {
+        return next(
+          errorHandler(400, "Reservation date cannot be in the past")
+        );
+      }
+    }
+
     const updatedReservation = await Reservation.findByIdAndUpdate(
       req.params.id,
       {
         $set: {
-          status: req.body.status,
+          customerName,
+          email,
+          phoneNumber,
+          partySize,
+          reservationDate,
+          reservationTime,
+          specialRequests,
+          status,
         },
       },
       { new: true }

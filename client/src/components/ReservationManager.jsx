@@ -1,11 +1,58 @@
 import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import {
+  FaEdit,
+  FaTimesCircle,
+  FaExclamationTriangle,
+  FaTimes,
+} from "react-icons/fa";
 
 const ReservationManager = () => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Edit/Cancel Modal State
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Form State
+  const [editFormData, setEditFormData] = useState({
+    customerName: "",
+    email: "",
+    phoneNumber: "",
+    partySize: 2,
+    reservationDate: "",
+    reservationTime: "",
+    specialRequests: "",
+    status: "",
+  });
+
+  // Time slots for edit form
+  const generateTimeSlots = () => {
+    const slots = [];
+    let currentHour = 11;
+    let currentMinute = 0;
+
+    while (currentHour < 22 || (currentHour === 22 && currentMinute <= 30)) {
+      const ampm = currentHour >= 12 ? "PM" : "AM";
+      let displayHour = currentHour > 12 ? currentHour - 12 : currentHour;
+      const displayMinute = currentMinute === 0 ? "00" : "30";
+      slots.push(`${displayHour}:${displayMinute} ${ampm}`);
+
+      if (currentMinute === 0) {
+        currentMinute = 30;
+      } else {
+        currentMinute = 0;
+        currentHour++;
+      }
+    }
+    return slots;
+  };
+  const availableTimeSlots = generateTimeSlots();
 
   // Fetch all reservations
   const fetchReservations = async () => {
@@ -35,15 +82,6 @@ const ReservationManager = () => {
   // Handle status change via checkbox
   const handleStatusChange = async (id, currentStatus) => {
     const newStatus = currentStatus === "confirmed" ? "pending" : "confirmed";
-    // Optimistic UI update could be done here, but let's wait for server response for consistency
-
-    // Show a loading toast or similar if needed, but for checkboxes typical UX is instant feedback or quick toggle
-    // We'll update the state locally first for responsiveness, then revert if failed
-
-    // Actually, user requested "Show loading state during update".
-    // Since it's a checkbox, a full page loader is annoying.
-    // We can just rely on the toast and data refresh.
-
     try {
       const response = await fetch(`/api/reservation/update/${id}`, {
         method: "PUT",
@@ -56,18 +94,118 @@ const ReservationManager = () => {
       }
 
       const updatedReservation = await response.json();
-
-      // Update local state
       setReservations((prev) =>
         prev.map((res) => (res._id === id ? updatedReservation : res))
       );
-
       toast.success(`Reservation marked as ${newStatus}`);
     } catch (error) {
       console.error("Error updating reservation:", error);
       toast.error("Failed to update reservation status");
-      // Optionally fetch data again to revert UI to server state
       fetchReservations();
+    }
+  };
+
+  // Open Edit Modal
+  const handleEditClick = (reservation) => {
+    setSelectedReservation(reservation);
+    setEditFormData({
+      customerName: reservation.customerName,
+      email: reservation.email,
+      phoneNumber: reservation.phoneNumber,
+      partySize: reservation.partySize,
+      reservationDate: new Date(reservation.reservationDate)
+        .toISOString()
+        .split("T")[0],
+      reservationTime: reservation.reservationTime,
+      specialRequests: reservation.specialRequests || "",
+      status: reservation.status,
+    });
+    setShowEditModal(true);
+  };
+
+  // Open Cancel Modal
+  const handleCancelClick = (reservation) => {
+    setSelectedReservation(reservation);
+    setShowCancelModal(true);
+  };
+
+  // Handle Edit Form Change
+  const handleEditFormChange = (e) => {
+    setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
+  };
+
+  // Submit Edit Form
+  const handleUpdateReservation = async (e) => {
+    e.preventDefault();
+    setIsUpdating(true);
+
+    if (editFormData.phoneNumber.length !== 11) {
+      toast.error("Phone number must be exactly 11 digits");
+      setIsUpdating(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/reservation/update/${selectedReservation._id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editFormData),
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to update reservation");
+      }
+
+      const updatedReservation = await response.json();
+      setReservations((prev) =>
+        prev.map((res) =>
+          res._id === selectedReservation._id ? updatedReservation : res
+        )
+      );
+      toast.success("Reservation updated successfully!");
+      setShowEditModal(false);
+    } catch (error) {
+      console.error("Error updating reservation:", error);
+      toast.error(error.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Confirm Cancellation
+  const handleConfirmCancel = async () => {
+    setIsUpdating(true);
+    try {
+      const response = await fetch(
+        `/api/reservation/update/${selectedReservation._id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "cancelled" }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to cancel reservation");
+      }
+
+      const updatedReservation = await response.json();
+      setReservations((prev) =>
+        prev.map((res) =>
+          res._id === selectedReservation._id ? updatedReservation : res
+        )
+      );
+      toast.success("Reservation cancelled successfully!");
+      setShowCancelModal(false);
+    } catch (error) {
+      console.error("Error cancelling reservation:", error);
+      toast.error("Failed to cancel reservation");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -174,6 +312,9 @@ const ReservationManager = () => {
                   <th className="p-3 border border-gray-300 font-semibold text-gray-700 text-center">
                     Completed
                   </th>
+                  <th className="p-3 border border-gray-300 font-semibold text-gray-700 text-center">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -220,8 +361,29 @@ const ReservationManager = () => {
                           onChange={() =>
                             handleStatusChange(res._id, res.status)
                           }
-                          className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
+                          disabled={res.status === "cancelled"}
+                          className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         />
+                      </td>
+                      <td className="p-3 border border-gray-300 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleEditClick(res)}
+                            disabled={res.status === "cancelled"}
+                            className="p-2 text-white bg-blue-500 rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                            title="Edit Reservation"
+                          >
+                            <FaEdit />
+                          </button>
+                          <button
+                            onClick={() => handleCancelClick(res)}
+                            disabled={res.status === "cancelled"}
+                            className="p-2 text-white bg-red-500 rounded hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                            title="Cancel Reservation"
+                          >
+                            <FaTimesCircle />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -230,6 +392,198 @@ const ReservationManager = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-xl font-semibold text-gray-900">
+                Edit Reservation Details
+              </h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-400 hover:text-gray-900"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateReservation} className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Customer Name
+                  </label>
+                  <input
+                    type="text"
+                    name="customerName"
+                    value={editFormData.customerName}
+                    onChange={handleEditFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={editFormData.email}
+                    onChange={handleEditFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="text"
+                    name="phoneNumber"
+                    value={editFormData.phoneNumber}
+                    onChange={handleEditFormChange}
+                    required
+                    maxLength={11}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Party Size
+                  </label>
+                  <input
+                    type="number"
+                    name="partySize"
+                    value={editFormData.partySize}
+                    onChange={handleEditFormChange}
+                    required
+                    min={1}
+                    max={20}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    name="reservationDate"
+                    value={editFormData.reservationDate}
+                    onChange={handleEditFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Time
+                  </label>
+                  <select
+                    name="reservationTime"
+                    value={editFormData.reservationTime}
+                    onChange={handleEditFormChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {availableTimeSlots.map((time, idx) => (
+                      <option key={idx} value={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Special Requests
+                </label>
+                <textarea
+                  name="specialRequests"
+                  value={editFormData.specialRequests}
+                  onChange={handleEditFormChange}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                ></textarea>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  name="status"
+                  value={editFormData.status}
+                  onChange={handleEditFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="px-4 py-2 text-white bg-green-600 rounded-md hover:bg-green-700 disabled:bg-green-400"
+                >
+                  {isUpdating ? "Updating..." : "Update Reservation"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 m-4">
+            <div className="flex flex-col items-center text-center">
+              <FaExclamationTriangle className="text-5xl text-red-500 mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Cancel Reservation?
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to cancel the reservation for{" "}
+                <strong>{selectedReservation?.customerName}</strong>? This
+                action will mark it as cancelled.
+              </p>
+
+              <div className="flex gap-4 w-full">
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 font-medium"
+                >
+                  No, Go Back
+                </button>
+                <button
+                  onClick={handleConfirmCancel}
+                  disabled={isUpdating}
+                  className="flex-1 px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 font-medium disabled:bg-red-400"
+                >
+                  {isUpdating ? "Cancelling..." : "Yes, Cancel"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <ToastContainer />
     </div>
   );
