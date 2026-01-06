@@ -7,6 +7,7 @@ import {
   FaExclamationTriangle,
   FaTimes,
   FaFileDownload,
+  FaSearch,
 } from "react-icons/fa";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -33,6 +34,9 @@ const ReservationManager = () => {
     specialRequests: "",
     status: "",
   });
+
+  // Search State
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Time slots for edit form
   const generateTimeSlots = () => {
@@ -328,6 +332,20 @@ const ReservationManager = () => {
           </button>
         </div>
 
+        {/* Search Bar */}
+        <div className="relative mb-6">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <FaSearch className="text-gray-400" />
+          </div>
+          <input
+            type="text"
+            className="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Search by customer name, email, or phone number..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
@@ -396,6 +414,14 @@ const ReservationManager = () => {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {reservations
+                  .filter((res) => {
+                    const query = searchQuery.toLowerCase();
+                    return (
+                      res.customerName.toLowerCase().includes(query) ||
+                      res.email.toLowerCase().includes(query) ||
+                      res.phoneNumber.includes(query)
+                    );
+                  })
                   .sort(
                     (a, b) =>
                       new Date(b.reservationDate) - new Date(a.reservationDate)
