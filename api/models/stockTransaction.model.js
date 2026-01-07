@@ -28,8 +28,14 @@ const stockTransactionSchema = new mongoose.Schema({
   },
   performedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Employee",
     required: true,
+    refPath: "performedByModel",
+  },
+  performedByModel: {
+    type: String,
+    required: true,
+    enum: ["User", "Employee"],
+    default: "Employee",
   },
   timestamp: {
     type: Date,

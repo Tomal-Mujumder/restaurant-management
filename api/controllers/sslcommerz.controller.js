@@ -1,6 +1,7 @@
 import SSLCommerzPayment from "sslcommerz-lts";
 import Payment from "../models/Payment.model.js";
 import sslcommerzConfig from "../config/sslcommerz.config.js";
+import { deductStockFromCart } from "../utils/stockHelper.js";
 
 // Initialize Payment
 export const initPayment = async (req, res, next) => {
@@ -11,12 +12,14 @@ export const initPayment = async (req, res, next) => {
     deleteOldPendingPayments();
 
     if (!userId || !cartItems || cartItems.length === 0 || !totalPrice) {
-      return res.status(400).json({ success: false, message: "Invalid request data" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid request data" });
     }
 
     // Generate unique transaction ID
     const transactionId = `BH${Date.now()}${userId.substring(0, 4)}`;
-    
+
     // Generate token number
     const tokenNumber = Math.floor(Math.random() * 1000) + 1;
 
@@ -83,8 +86,15 @@ export const initPayment = async (req, res, next) => {
         res.status(200).json({ success: true, gatewayUrl, tokenNumber });
       } else {
         // If init failed, delete the pending payment
-        Payment.findOneAndDelete({ "paymentInfo.cardNumber": transactionId }).exec();
-        res.status(400).json({ success: false, message: "SSLCommerz Session was not successful" });
+        Payment.findOneAndDelete({
+          "paymentInfo.cardNumber": transactionId,
+        }).exec();
+        res
+          .status(400)
+          .json({
+            success: false,
+            message: "SSLCommerz Session was not successful",
+          });
       }
     });
   } catch (error) {
@@ -100,10 +110,14 @@ export const paymentSuccess = async (req, res, next) => {
     console.log("SSLCommerz Success:", { tran_id, val_id });
 
     // Find the pending payment by transaction ID (stored in cardNumber)
-    const pendingPayment = await Payment.findOne({ "paymentInfo.cardNumber": tran_id });
+    const pendingPayment = await Payment.findOne({
+      "paymentInfo.cardNumber": tran_id,
+    });
 
     if (!pendingPayment) {
-      return res.redirect(`http://localhost:5173/payment-failed?reason=Session Expired or Invalid Transaction`);
+      return res.redirect(
+        `http://localhost:5173/payment-failed?reason=Session Expired or Invalid Transaction`
+      );
     }
 
     const sslcz = new SSLCommerzPayment(
@@ -115,29 +129,45 @@ export const paymentSuccess = async (req, res, next) => {
     // Validate transaction
     sslcz.validate({ val_id }).then(async (data) => {
       if (data.status === "VALID") {
-        
         // Update the payment record to mark it as successful
-        // We update the existing record instead of creating a new one
         await Payment.findByIdAndUpdate(pendingPayment._id, {
-            $set: {
-                "paymentInfo.cardType": "SSLCommerz",
-                "paymentInfo.cardName": "Online Payment",
-                "paymentInfo.securityCode": "Gateway Payment",
-                // You can also save other info from 'data' here if needed
-            }
+          $set: {
+            "paymentInfo.cardType": "SSLCommerz",
+            "paymentInfo.cardName": "Online Payment",
+            "paymentInfo.securityCode": "Gateway Payment",
+          },
         });
 
+        // Deduct Stock
+        try {
+          await deductStockFromCart(
+            pendingPayment.cartItems,
+            pendingPayment.userId,
+            pendingPayment.tokenNumber,
+            "User"
+          );
+        } catch (stockError) {
+          console.error("Stock deduction failed for SSLCommerz:", stockError);
+          // Note: Since money is already deducted at this point in SSLCommerz,
+          // we should ideally mark the order for manual review instead of just failing.
+          // But for now, we'll try to deduct and log errors.
+        }
+
         // Redirect to success page
-        res.redirect(`http://localhost:5173/payment-success?tranId=${pendingPayment.tokenNumber}`);
+        res.redirect(
+          `http://localhost:5173/payment-success?tranId=${pendingPayment.tokenNumber}`
+        );
       } else {
         // Validation failed, delete the pending payment
         await Payment.findByIdAndDelete(pendingPayment._id);
-        res.redirect(`http://localhost:5173/payment-failed?reason=Validation Failed`);
+        res.redirect(
+          `http://localhost:5173/payment-failed?reason=Validation Failed`
+        );
       }
     });
   } catch (error) {
-     console.error("Payment Success Error:", error);
-     res.redirect(`http://localhost:5173/payment-failed?reason=Server Error`);
+    console.error("Payment Success Error:", error);
+    res.redirect(`http://localhost:5173/payment-failed?reason=Server Error`);
   }
 };
 
@@ -190,7 +220,7 @@ export const deleteOldPendingPayments = async () => {
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
     await Payment.deleteMany({
       "paymentInfo.cardType": "SSLCommerz-Pending",
-      createdAt: { $lt: thirtyMinutesAgo }
+      createdAt: { $lt: thirtyMinutesAgo },
     });
     console.log("Cleaned up old pending SSLCommerz transactions");
   } catch (error) {

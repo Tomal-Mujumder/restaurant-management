@@ -54,6 +54,7 @@ export const updateStock = async (req, res, next) => {
       newQty,
       reason: reason || "Manual adjustment",
       performedBy: req.user.id,
+      performedByModel: "Employee",
     });
     await transaction.save();
 

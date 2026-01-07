@@ -105,6 +105,7 @@ export const receiveOrder = async (req, res, next) => {
         newQty: stock.quantity,
         reason: `Purchase Order ${order.orderId}`,
         performedBy: req.user.id,
+        performedByModel: "Employee",
       });
       await transaction.save();
     }

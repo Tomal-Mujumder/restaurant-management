@@ -1,9 +1,8 @@
 import Payment from "../models/Payment.model.js";
 import User from "../models/user.model.js";
 import Employee from "../models/employee.model.js";
-import Stock from "../models/stock.model.js";
-import StockTransaction from "../models/stockTransaction.model.js";
 import { errorHandler } from "../utils/error.js";
+import { deductStockFromCart } from "../utils/stockHelper.js";
 
 // Save payment details to database
 export const savePayment = async (req, res, next) => {
@@ -22,39 +21,21 @@ export const savePayment = async (req, res, next) => {
 
     await payment.save();
 
-    // Deduct stock for each item
-    for (const item of cartItems) {
-      const stock = await Stock.findOne({ foodId: item.foodId });
+    try {
+      // Use helper to deduct stock for each item
+      await deductStockFromCart(cartItems, userId, tokenNumber, "User");
 
-      if (!stock || stock.quantity < item.quantity) {
-        // Delete payment and return error
+      res.status(201).json({ message: "Payment successful", payment });
+    } catch (error) {
+      console.error("Stock deduction failed:", error);
+      // Attempt to delete payment to maintain consistency
+      if (payment._id) {
         await Payment.findByIdAndDelete(payment._id);
-        return next(
-          errorHandler(400, `Insufficient stock for ${item.foodName}`)
-        );
       }
-
-      // Update stock
-      const previousQty = stock.quantity;
-      await Stock.findByIdAndUpdate(stock._id, {
-        $inc: { quantity: -item.quantity },
-      });
-
-      // Log transaction
-      await StockTransaction.create({
-        foodId: item.foodId,
-        transactionType: "sale",
-        quantity: item.quantity,
-        previousQty: previousQty,
-        newQty: previousQty - item.quantity,
-        performedBy: userId,
-        reason: `Order payment - Token: ${tokenNumber}`,
-      });
+      return next(error); // error from helper or deletion
     }
-
-    res.status(201).json({ message: "Payment successful", payment });
   } catch (error) {
-    console.error(error);
+    console.error("Payment initialization failed:", error);
     next(errorHandler(500, "Payment failed"));
   }
 };
