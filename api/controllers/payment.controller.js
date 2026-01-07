@@ -1,6 +1,8 @@
 import Payment from "../models/Payment.model.js";
 import User from "../models/user.model.js";
 import Employee from "../models/employee.model.js";
+import Stock from "../models/stock.model.js";
+import StockTransaction from "../models/stockTransaction.model.js";
 import { errorHandler } from "../utils/error.js";
 
 // Save payment details to database
@@ -19,6 +21,37 @@ export const savePayment = async (req, res, next) => {
     });
 
     await payment.save();
+
+    // Deduct stock for each item
+    for (const item of cartItems) {
+      const stock = await Stock.findOne({ foodId: item.foodId });
+
+      if (!stock || stock.quantity < item.quantity) {
+        // Delete payment and return error
+        await Payment.findByIdAndDelete(payment._id);
+        return next(
+          errorHandler(400, `Insufficient stock for ${item.foodName}`)
+        );
+      }
+
+      // Update stock
+      const previousQty = stock.quantity;
+      await Stock.findByIdAndUpdate(stock._id, {
+        $inc: { quantity: -item.quantity },
+      });
+
+      // Log transaction
+      await StockTransaction.create({
+        foodId: item.foodId,
+        transactionType: "sale",
+        quantity: item.quantity,
+        previousQty: previousQty,
+        newQty: previousQty - item.quantity,
+        performedBy: userId,
+        reason: `Order payment - Token: ${tokenNumber}`,
+      });
+    }
+
     res.status(201).json({ message: "Payment successful", payment });
   } catch (error) {
     console.error(error);

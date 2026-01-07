@@ -6,7 +6,12 @@ import {
   HiCube,
   HiTruck,
 } from "react-icons/hi";
-import { MdDashboard } from "react-icons/md";
+import {
+  MdDashboard,
+  MdInventory,
+  MdAnalytics,
+  MdLocalShipping,
+} from "react-icons/md";
 import { FaCalendarAlt } from "react-icons/fa";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { LuUsers } from "react-icons/lu";
@@ -133,35 +138,35 @@ export default function AdminDashSideBar() {
                   activeTab === "stock-management" ? "bg-[#707070]" : ""
                 }`}
               >
-                <HiCube color="#D4D4D4" />
+                <MdInventory color="#D4D4D4" />
                 <span className="text-[15px] ml-4 text-[#D4D4D4]">
                   Stock Management
                 </span>
               </div>
             </Link>
 
-            <Link to="/admin-dashboard?tab=analytics">
+            <Link to="/admin-dashboard?tab=analytics-dashboard">
               <div
                 className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
-                  activeTab === "analytics" ? "bg-[#707070]" : ""
+                  activeTab === "analytics-dashboard" ? "bg-[#707070]" : ""
                 }`}
               >
-                <HiChartBar color="#D4D4D4" />
+                <MdAnalytics color="#D4D4D4" />
                 <span className="text-[15px] ml-4 text-[#D4D4D4]">
-                  Analytics
+                  Analytics Dashboard
                 </span>
               </div>
             </Link>
 
-            <Link to="/admin-dashboard?tab=suppliers">
+            <Link to="/admin-dashboard?tab=supplier-management">
               <div
                 className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
-                  activeTab === "suppliers" ? "bg-[#707070]" : ""
+                  activeTab === "supplier-management" ? "bg-[#707070]" : ""
                 }`}
               >
-                <HiTruck color="#D4D4D4" />
+                <MdLocalShipping color="#D4D4D4" />
                 <span className="text-[15px] ml-4 text-[#D4D4D4]">
-                  Suppliers
+                  Supplier Management
                 </span>
               </div>
             </Link>
@@ -245,35 +250,35 @@ export default function AdminDashSideBar() {
                   activeTab === "stock-management" ? "bg-[#707070]" : ""
                 }`}
               >
-                <HiCube color="#D4D4D4" />
+                <MdInventory color="#D4D4D4" />
                 <span className="text-[15px] ml-4 text-[#D4D4D4]">
                   Stock Management
                 </span>
               </div>
             </Link>
 
-            <Link to="/admin-dashboard?tab=analytics">
+            <Link to="/admin-dashboard?tab=analytics-dashboard">
               <div
                 className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
-                  activeTab === "analytics" ? "bg-[#707070]" : ""
+                  activeTab === "analytics-dashboard" ? "bg-[#707070]" : ""
                 }`}
               >
-                <HiChartBar color="#D4D4D4" />
+                <MdAnalytics color="#D4D4D4" />
                 <span className="text-[15px] ml-4 text-[#D4D4D4]">
-                  Analytics
+                  Analytics Dashboard
                 </span>
               </div>
             </Link>
 
-            <Link to="/admin-dashboard?tab=suppliers">
+            <Link to="/admin-dashboard?tab=supplier-management">
               <div
                 className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
-                  activeTab === "suppliers" ? "bg-[#707070]" : ""
+                  activeTab === "supplier-management" ? "bg-[#707070]" : ""
                 }`}
               >
-                <HiTruck color="#D4D4D4" />
+                <MdLocalShipping color="#D4D4D4" />
                 <span className="text-[15px] ml-4 text-[#D4D4D4]">
-                  Suppliers
+                  Supplier Management
                 </span>
               </div>
             </Link>

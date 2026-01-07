@@ -13,7 +13,7 @@ const router = express.Router();
 router.get("/all", verifyToken, getAllStocks);
 router.put("/update/:foodId", verifyToken, updateStock);
 router.get("/low-stock", verifyToken, getLowStockItems); // Define this before /:foodId to avoid conflict
-router.get("/:foodId", verifyToken, getStockById);
+router.get("/:foodId", getStockById);
 router.put("/threshold/:foodId", verifyToken, setThresholds);
 
 export default router;

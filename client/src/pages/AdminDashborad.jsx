@@ -64,8 +64,8 @@ export default function AdminDashboard() {
           {tab === "reservations" && <ReservationManager />}
 
           {tab === "stock-management" && <StockManagement />}
-          {tab === "analytics" && <AnalyticsDashboard />}
-          {tab === "suppliers" && <SupplierManagement />}
+          {tab === "analytics-dashboard" && <AnalyticsDashboard />}
+          {tab === "supplier-management" && <SupplierManagement />}
         </div>
       </div>
     </>

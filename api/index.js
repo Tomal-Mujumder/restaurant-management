@@ -21,6 +21,7 @@ import reservationRoutes from "./routes/reservation.routes.js";
 import stockRoutes from "./routes/stock.routes.js";
 import supplierRoutes from "./routes/supplier.routes.js";
 import purchaseOrderRoutes from "./routes/purchaseOrder.routes.js";
+import analyticsRoutes from "./routes/analytics.routes.js";
 
 // import shippingRoutes from "./routes/shipping.routes.js";
 
@@ -64,6 +65,7 @@ app.use("/api/reservation", reservationRoutes);
 app.use("/api/stock", stockRoutes);
 app.use("/api/supplier", supplierRoutes);
 app.use("/api/purchaseorder", purchaseOrderRoutes);
+app.use("/api/analytics", analyticsRoutes);
 // app.use("/api/shipping", shippingRoutes);
 
 app.use((err, req, res, next) => {

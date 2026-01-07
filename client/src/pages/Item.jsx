@@ -33,7 +33,22 @@ export default function Item() {
 
       const data = await response.json();
       if (data.foodItems) {
-        setFoodItems(data.foodItems);
+        // Fetch stock for each item as requested
+        const itemsWithStock = await Promise.all(
+          data.foodItems.map(async (item) => {
+            try {
+              const stockRes = await fetch(`/api/stock/${item._id}`);
+              if (stockRes.ok) {
+                const stockData = await stockRes.json();
+                return { ...item, stock: stockData.quantity };
+              }
+              return { ...item, stock: 0 };
+            } catch (err) {
+              return { ...item, stock: 0 };
+            }
+          })
+        );
+        setFoodItems(itemsWithStock);
         setError(null);
       } else {
         setFoodItems([]); // Set empty if no items found
@@ -60,7 +75,7 @@ export default function Item() {
   const addToCart = (item) => {
     const userId = currentUser?._id;
     if (!userId) {
-      showToast("Please login first to add items to cart");
+      showToast("Please login first to add items to cart", "error");
       navigate("/signin");
       return;
     }
@@ -72,9 +87,19 @@ export default function Item() {
       (cartItem) => cartItem.id === item._id
     );
 
+    const availableStock = item.stock || 0;
+
     if (existingItemIndex > -1) {
+      if (currentCartList[existingItemIndex].quantity + 1 > availableStock) {
+        showToast(`Only ${availableStock} units available`, "error");
+        return;
+      }
       currentCartList[existingItemIndex].quantity += 1;
     } else {
+      if (availableStock < 1) {
+        showToast("Out of stock", "error");
+        return;
+      }
       currentCartList.push({
         id: item._id,
         quantity: 1,
@@ -97,8 +122,14 @@ export default function Item() {
   // Handle "Buy Now" button click
   const handleBuyNow = (item) => {
     if (!currentUser?._id) {
-      showToast("Please login first to add items to cart");
+      showToast("Please login first to add items to cart", "error");
       navigate("/signin");
+      return;
+    }
+    // Check stock before navigating
+    const availableStock = item.stock || 0;
+    if (availableStock < 1) {
+      showToast("Out of stock", "error");
       return;
     }
     addToCart(item);
@@ -107,14 +138,17 @@ export default function Item() {
   };
 
   // Show toast notification
-  const showToast = (message) => {
+  const showToast = (message, type = "success") => {
     Toastify({
       text: message,
       duration: 3000,
       close: true,
       gravity: "top",
       position: "right",
-      backgroundColor: "linear-gradient(to right, #4caf50, #81c784)",
+      backgroundColor:
+        type === "error"
+          ? "linear-gradient(to right, #ff5f6d, #ffc371)"
+          : "linear-gradient(to right, #4caf50, #81c784)",
     }).showToast();
   };
 
