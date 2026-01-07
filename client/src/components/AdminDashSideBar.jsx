@@ -1,4 +1,11 @@
-import { HiArrowSmRight, HiUser, HiOutlineUserGroup } from "react-icons/hi";
+import {
+  HiArrowSmRight,
+  HiUser,
+  HiOutlineUserGroup,
+  HiChartBar,
+  HiCube,
+  HiTruck,
+} from "react-icons/hi";
 import { MdDashboard } from "react-icons/md";
 import { FaCalendarAlt } from "react-icons/fa";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
@@ -119,6 +126,45 @@ export default function AdminDashSideBar() {
                 </span>
               </div>
             </Link>
+
+            <Link to="/admin-dashboard?tab=stock-management">
+              <div
+                className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
+                  activeTab === "stock-management" ? "bg-[#707070]" : ""
+                }`}
+              >
+                <HiCube color="#D4D4D4" />
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  Stock Management
+                </span>
+              </div>
+            </Link>
+
+            <Link to="/admin-dashboard?tab=analytics">
+              <div
+                className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
+                  activeTab === "analytics" ? "bg-[#707070]" : ""
+                }`}
+              >
+                <HiChartBar color="#D4D4D4" />
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  Analytics
+                </span>
+              </div>
+            </Link>
+
+            <Link to="/admin-dashboard?tab=suppliers">
+              <div
+                className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
+                  activeTab === "suppliers" ? "bg-[#707070]" : ""
+                }`}
+              >
+                <HiTruck color="#D4D4D4" />
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  Suppliers
+                </span>
+              </div>
+            </Link>
           </>
         )}
 
@@ -189,6 +235,45 @@ export default function AdminDashSideBar() {
                 <FaCalendarAlt color="#D4D4D4" />
                 <span className="text-[15px] ml-4 text-[#D4D4D4]">
                   Reservation
+                </span>
+              </div>
+            </Link>
+
+            <Link to="/admin-dashboard?tab=stock-management">
+              <div
+                className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
+                  activeTab === "stock-management" ? "bg-[#707070]" : ""
+                }`}
+              >
+                <HiCube color="#D4D4D4" />
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  Stock Management
+                </span>
+              </div>
+            </Link>
+
+            <Link to="/admin-dashboard?tab=analytics">
+              <div
+                className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
+                  activeTab === "analytics" ? "bg-[#707070]" : ""
+                }`}
+              >
+                <HiChartBar color="#D4D4D4" />
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  Analytics
+                </span>
+              </div>
+            </Link>
+
+            <Link to="/admin-dashboard?tab=suppliers">
+              <div
+                className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
+                  activeTab === "suppliers" ? "bg-[#707070]" : ""
+                }`}
+              >
+                <HiTruck color="#D4D4D4" />
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">
+                  Suppliers
                 </span>
               </div>
             </Link>

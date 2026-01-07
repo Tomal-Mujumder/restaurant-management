@@ -12,6 +12,9 @@ import FoodCategoryForm from "../components/FoodCategoryForm.jsx";
 import FoodCategoryList from "../components/FoodCategoryList.jsx";
 import PaymentManager from "../components/PaymentManager.jsx";
 import ReservationManager from "../components/ReservationManager.jsx";
+import StockManagement from "../components/StockManagement.jsx";
+import AnalyticsDashboard from "../components/AnalyticsDashboard.jsx";
+import SupplierManagement from "../components/SupplierManagement.jsx";
 
 export default function AdminDashboard() {
   const location = useLocation();
@@ -59,6 +62,10 @@ export default function AdminDashboard() {
 
           {tab === "payment-manager" && <PaymentManager />}
           {tab === "reservations" && <ReservationManager />}
+
+          {tab === "stock-management" && <StockManagement />}
+          {tab === "analytics" && <AnalyticsDashboard />}
+          {tab === "suppliers" && <SupplierManagement />}
         </div>
       </div>
     </>
