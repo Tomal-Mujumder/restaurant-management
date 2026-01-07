@@ -13,6 +13,11 @@ const stockSchema = new mongoose.Schema(
       required: true,
       default: 0,
     },
+    unit: {
+      type: String,
+      enum: ["kg", "liters", "pieces", "grams"],
+      default: "pieces",
+    },
     minThreshold: {
       type: Number,
       default: 10,
