@@ -18,6 +18,7 @@ import uploadRoutes from "./routes/upload.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
 import statsRoutes from "./routes/stats.routes.js";
 import reservationRoutes from "./routes/reservation.routes.js";
+import stockRoutes from "./routes/stock.routes.js";
 
 // import shippingRoutes from "./routes/shipping.routes.js";
 
@@ -58,6 +59,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/reservation", reservationRoutes);
+app.use("/api/stock", stockRoutes);
 // app.use("/api/shipping", shippingRoutes);
 
 app.use((err, req, res, next) => {
