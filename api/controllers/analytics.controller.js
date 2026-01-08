@@ -49,10 +49,10 @@ export const getDashboardStats = async (req, res, next) => {
       value: categoryDistribution[key],
     }));
 
-    // 2. Recent Transactions (Last 10)
+    // 2. Recent Transactions (Last 50)
     const recentTransactions = await StockTransaction.find()
       .sort({ timestamp: -1 })
-      .limit(10)
+      .limit(50)
       .populate("foodId", "foodName")
       .populate("performedBy", "username");
 
@@ -116,5 +116,51 @@ export const getDashboardStats = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const downloadTransactionsByDate = async (req, res, next) => {
+  try {
+    // Check if Manager OR Admin
+    if (req.user.role !== "Manager" && !req.user.isAdmin) {
+      return next(errorHandler(403, "Access denied"));
+    }
+
+    const { date } = req.query; // Format: YYYY-MM-DD
+
+    if (!date) {
+      return next(errorHandler(400, { message: "Date parameter is required" }));
+    }
+
+    // Parse date to get start and end of day
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 999);
+
+    console.log(`Fetching ALL transactions for date: ${date}`);
+
+    // Fetch ALL transactions for this date (NO LIMIT)
+    const transactions = await StockTransaction.find({
+      timestamp: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    })
+      .populate("foodId", "foodName")
+      .sort({ timestamp: -1 });
+
+    console.log(`Found ${transactions.length} transactions for ${date}`);
+
+    res.status(200).json({
+      success: true,
+      date: date,
+      count: transactions.length,
+      transactions: transactions,
+    });
+  } catch (error) {
+    console.error("Error fetching transactions by date:", error);
+    next(errorHandler(500, { message: "Failed to fetch transactions" }));
   }
 };

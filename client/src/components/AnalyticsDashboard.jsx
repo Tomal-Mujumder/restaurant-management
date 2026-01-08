@@ -87,29 +87,69 @@ export default function AnalyticsDashboard() {
     setFilteredTransactions([]);
   };
 
-  const handleDownloadPDF = () => {
-    const transactionsToDownload =
-      filteredTransactions.length > 0
-        ? filteredTransactions
-        : stats.recentTransactions;
+  const handleDownloadPDF = async () => {
+    let transactionsToDownload = [];
+
+    // If date is selected, fetch ALL transactions from backend for that date
+    if (selectedDate) {
+      try {
+        console.log(
+          `Fetching all transactions for ${selectedDate} from backend...`
+        );
+
+        const response = await fetch(
+          `/api/analytics/download-by-date?date=${selectedDate}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          alert("Failed to fetch transactions for download");
+          return;
+        }
+
+        const data = await response.json();
+        transactionsToDownload = data.transactions;
+
+        console.log(`Downloaded ${data.count} transactions from backend`);
+
+        if (transactionsToDownload.length === 0) {
+          alert(`No transactions found for ${selectedDate}`);
+          return;
+        }
+      } catch (error) {
+        console.error("Error downloading transactions:", error);
+        alert("Error downloading transactions");
+        return;
+      }
+    } else {
+      // If no date selected, use the 50 shown in table
+      transactionsToDownload = stats.recentTransactions;
+    }
 
     if (transactionsToDownload.length === 0) {
       alert("No transactions to download");
       return;
     }
 
+    // Generate PDF
     const doc = new jsPDF();
 
     // Add title
     doc.setFontSize(16);
     doc.text("Stock Transactions Report", 14, 15);
 
-    // Add date info
+    // Add date and count info
     doc.setFontSize(10);
     if (selectedDate) {
       doc.text(`Date: ${selectedDate}`, 14, 25);
+      doc.text(`Total Transactions: ${transactionsToDownload.length}`, 14, 32);
     } else {
       doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 25);
+      doc.text(`Showing Recent 50 Transactions`, 14, 32);
     }
 
     // Prepare table data
@@ -128,16 +168,18 @@ export default function AnalyticsDashboard() {
         ["Date", "Food Item", "Type", "Quantity", "Performed By", "Reason"],
       ],
       body: tableData,
-      startY: 30,
+      startY: 38,
       styles: { fontSize: 8 },
       headStyles: { fillColor: [41, 128, 185] },
     });
 
     // Save PDF
     const fileName = selectedDate
-      ? `transactions_${selectedDate}.pdf`
-      : `transactions_${new Date().toISOString().split("T")[0]}.pdf`;
+      ? `transactions_${selectedDate}_all_${transactionsToDownload.length}.pdf`
+      : `transactions_recent50.pdf`;
     doc.save(fileName);
+
+    console.log(`PDF generated: ${fileName}`);
   };
 
   if (loading) {
@@ -356,6 +398,11 @@ export default function AnalyticsDashboard() {
           <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900 rounded text-sm text-blue-800 dark:text-blue-200">
             Showing {filteredTransactions.length} transaction(s) for{" "}
             {selectedDate}
+            <br />
+            <span className="text-xs">
+              💡 Click "Download PDF" to get ALL transactions for this date (not
+              limited to what's shown)
+            </span>
           </div>
         )}
         <div className="overflow-x-auto">
