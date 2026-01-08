@@ -3,7 +3,7 @@ import StockTransaction from "../models/stockTransaction.model.js";
 import { errorHandler } from "../utils/error.js";
 
 export const getDashboardStats = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "Access denied"));
   }
 
