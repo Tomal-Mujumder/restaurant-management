@@ -1,12 +1,12 @@
 // payment.routes.js
 import express from "express";
-import { 
-  savePayment, 
-  getAllPayments, 
-  getPaymentByTokenNumber, 
-  updatePayment, 
+import {
+  savePayment,
+  getAllPayments,
+  getPaymentByTokenNumber,
+  updatePayment,
   deleteOldPayments,
-  getPaymentDetailsByToken
+  getPaymentDetailsByToken,
 } from "../controllers/payment.controller.js";
 import { verifyToken, verifyAdmin } from "../utils/verifyUser.js";
 
@@ -22,7 +22,7 @@ router.get("/getallpayment", getAllPayments);
 router.get("/search/:tokenNumber", getPaymentByTokenNumber);
 
 // Route to update payment status
-router.put('/update/:paymentId', updatePayment);
+router.put("/update/:paymentId", verifyToken, updatePayment);
 
 // Route to delete payments older than a specified number of days
 router.post("/delete-old", verifyToken, verifyAdmin, deleteOldPayments);

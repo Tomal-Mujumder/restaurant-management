@@ -79,28 +79,54 @@ export const updatePayment = async (req, res, next) => {
       return next(errorHandler(404, { message: "Payment not found" }));
     }
 
-    // If marking as complete (isChecked = true) and not already completed
+    // DEBUG: Log req.user to see what's available
+    console.log("=== DEBUG: req.user contents ===");
+    console.log("Full req.user:", JSON.stringify(req.user, null, 2));
+    console.log("req.user.username:", req.user?.username);
+    console.log("req.user.email:", req.user?.email);
+    console.log("req.user.empId:", req.user?.empId);
+    console.log("req.user.name:", req.user?.name);
+    console.log("req.user.role:", req.user?.role);
+    console.log("================================");
+
+    // Extract manager info with multiple fallbacks
+    let managerInfo = "Unknown";
+
+    if (req.user) {
+      managerInfo =
+        req.user.username ||
+        req.user.name ||
+        req.user.email ||
+        (req.user.empId ? `Manager-${req.user.empId}` : null) ||
+        (req.user.id ? `User-${req.user.id}` : null) ||
+        "Manager";
+
+      console.log(`Manager performing action: ${managerInfo}`);
+    } else {
+      console.log(
+        "WARNING: req.user is undefined! Check verifyToken middleware."
+      );
+    }
+
+    // ========== MARKING AS COMPLETE (Deduct Stock) ==========
     if (isChecked === true && payment.isChecked === false) {
       console.log(
-        `Processing payment completion for Token: ${payment.tokenNumber}`
+        `✓ Processing payment completion for Token: ${payment.tokenNumber}`
       );
 
-      // Deduct stock for all items
       try {
         for (const item of payment.cartItems) {
           console.log(
             `Processing item: ${item.foodName}, Quantity: ${item.quantity}`
           );
 
-          // Find stock record - item might not have foodId stored
-          // We need to find by foodName as backup
+          // Find stock record
           let stock = null;
 
           if (item.foodId) {
             stock = await Stock.findOne({ foodId: item.foodId });
           }
 
-          // If not found by foodId, try finding FoodItem by name then get stock
           if (!stock) {
             const foodItem = await mongoose.model("FoodItem").findOne({
               foodName: item.foodName,
@@ -130,31 +156,32 @@ export const updatePayment = async (req, res, next) => {
           // Store previous quantity
           const previousQty = stock.quantity;
 
-          // Deduct stock
+          // DEDUCT stock
           await Stock.findByIdAndUpdate(stock._id, {
             $inc: { quantity: -item.quantity },
           });
 
-          // Create stock transaction
+          // Create transaction log
+          // Create transaction log
           await StockTransaction.create({
             foodId: stock.foodId,
             transactionType: "sale",
             quantity: item.quantity,
             previousQty: previousQty,
             newQty: previousQty - item.quantity,
-            performedBy: payment.userId,
-            reason: `Order completed by manager - Token: ${payment.tokenNumber}`,
+            performedBy: managerInfo, // NEW: Manager's username
+            reason: `Order confirmed - Token: ${payment.tokenNumber}`,
           });
 
           console.log(
-            `✓ Stock deducted for ${item.foodName}: ${previousQty} → ${
+            `✓ Stock deducted: ${item.foodName} (${previousQty} → ${
               previousQty - item.quantity
-            }`
+            })`
           );
         }
 
         console.log(
-          `✓ All stock deducted successfully for Token: ${payment.tokenNumber}`
+          `✓ Payment completed and stock deducted for Token: ${payment.tokenNumber}`
         );
       } catch (stockError) {
         console.error("Stock deduction error:", stockError);
@@ -164,14 +191,96 @@ export const updatePayment = async (req, res, next) => {
       }
     }
 
+    // ========== UNCHECKING / CANCELLING (Restore Stock) ==========
+    if (isChecked === false && payment.isChecked === true) {
+      console.log(
+        `✓ Processing order cancellation/return for Token: ${payment.tokenNumber}`
+      );
+
+      try {
+        for (const item of payment.cartItems) {
+          console.log(
+            `Restoring item: ${item.foodName}, Quantity: ${item.quantity}`
+          );
+
+          // Find stock record
+          let stock = null;
+
+          if (item.foodId) {
+            stock = await Stock.findOne({ foodId: item.foodId });
+          }
+
+          if (!stock) {
+            const foodItem = await mongoose.model("FoodItem").findOne({
+              foodName: item.foodName,
+            });
+
+            if (foodItem) {
+              stock = await Stock.findOne({ foodId: foodItem._id });
+            }
+          }
+
+          if (!stock) {
+            console.log(`⚠️ Stock record not found for ${item.foodName}`);
+            return res.status(404).json({
+              message: `Stock record not found for ${item.foodName}.`,
+            });
+          }
+
+          console.log(`Current stock for ${item.foodName}: ${stock.quantity}`);
+
+          // Store previous quantity
+          const previousQty = stock.quantity;
+
+          // RESTORE stock (add back)
+          await Stock.findByIdAndUpdate(stock._id, {
+            $inc: { quantity: item.quantity },
+          });
+
+          // Create transaction log
+          // Create transaction log
+          await StockTransaction.create({
+            foodId: stock.foodId,
+            transactionType: "adjustment",
+            quantity: item.quantity,
+            previousQty: previousQty,
+            newQty: previousQty + item.quantity,
+            performedBy: managerInfo, // NEW: Manager's username
+            reason: `Order cancelled - Token: ${payment.tokenNumber}`,
+          });
+
+          console.log(
+            `✓ Stock restored: ${item.foodName} (${previousQty} → ${
+              previousQty + item.quantity
+            })`
+          );
+        }
+
+        console.log(
+          `✓ Order cancelled and stock restored for Token: ${payment.tokenNumber}`
+        );
+      } catch (stockError) {
+        console.error("Stock restoration error:", stockError);
+        return res.status(500).json({
+          message: `Failed to restore stock: ${stockError.message}`,
+        });
+      }
+    }
+
     // Update payment status
     payment.isChecked = isChecked;
     const updatedPayment = await payment.save();
 
+    // Response message based on action
+    let message = "Payment status updated";
+    if (isChecked === true && payment.isChecked === false) {
+      message = "Payment completed and stock deducted";
+    } else if (isChecked === false && payment.isChecked === true) {
+      message = "Order cancelled and stock restored";
+    }
+
     res.status(200).json({
-      message: isChecked
-        ? "Payment completed and stock updated"
-        : "Payment status updated",
+      message: message,
       payment: updatedPayment,
     });
   } catch (error) {

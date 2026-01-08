@@ -277,9 +277,7 @@ export default function AnalyticsDashboard() {
                     </span>
                   </td>
                   <td className="px-6 py-4">{t.quantity}</td>
-                  <td className="px-6 py-4">
-                    {t.performedBy?.username || "Unknown"}
-                  </td>
+                  <td className="px-6 py-4">{t.performedBy || "Unknown"}</td>
                 </tr>
               ))}
             </tbody>
