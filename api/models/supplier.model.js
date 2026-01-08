@@ -30,7 +30,8 @@ const supplierSchema = new mongoose.Schema(
     },
     itemsSupplied: {
       type: [String],
-      required: true,
+      required: false,
+      default: [],
     },
     rating: {
       type: String,

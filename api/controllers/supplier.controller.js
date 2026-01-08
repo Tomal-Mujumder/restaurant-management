@@ -20,15 +20,7 @@ export const createSupplier = async (req, res, next) => {
     } = req.body;
 
     // Validation
-    if (
-      !companyName ||
-      !contactPerson ||
-      !phone ||
-      !email ||
-      !address ||
-      !itemsSupplied ||
-      itemsSupplied.length === 0
-    ) {
+    if (!companyName || !contactPerson || !phone || !email || !address) {
       return next(errorHandler(400, "All fields are required"));
     }
 
@@ -61,11 +53,17 @@ export const createSupplier = async (req, res, next) => {
 
 // 2. Get All Suppliers
 export const getAllSuppliers = async (req, res, next) => {
+  console.log(
+    "getAllSuppliers called by:",
+    req.user?.username || req.user?.email
+  );
   if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "Access denied"));
   }
+
   try {
     const suppliers = await Supplier.find().sort({ createdAt: -1 });
+    console.log("Found suppliers:", suppliers.length);
     res.status(200).json(suppliers);
   } catch (error) {
     next(error);

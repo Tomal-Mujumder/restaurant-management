@@ -65,9 +65,17 @@ export default function SupplierManagement() {
       const res = await fetch("/api/supplier/all", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
+      console.log("Fetch Suppliers Status:", res.status);
       const data = await res.json();
+      console.log("Fetch Suppliers Data:", data);
+
       if (res.ok) {
-        setSuppliers(data);
+        if (Array.isArray(data)) {
+          setSuppliers(data);
+        } else {
+          console.error("Suppliers data is not an array:", data);
+          setSuppliers([]);
+        }
       } else {
         console.error("Failed to fetch suppliers:", data.message);
       }
@@ -116,6 +124,33 @@ export default function SupplierManagement() {
   // Supplier Actions
   const handleSupplierSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation - itemsSupplied is optional, not required
+    if (
+      !supplierFormData.companyName ||
+      !supplierFormData.contactPerson ||
+      !supplierFormData.phone ||
+      !supplierFormData.email ||
+      !supplierFormData.address
+    ) {
+      Toastify({
+        text: "All fields are required!",
+        style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" },
+        duration: 3000,
+      }).showToast();
+      return;
+    }
+
+    // Phone validation
+    if (!/^\d{11}$/.test(supplierFormData.phone)) {
+      Toastify({
+        text: "Phone number must be exactly 11 digits!",
+        style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" },
+        duration: 3000,
+      }).showToast();
+      return;
+    }
+
     setLoading(true);
     try {
       const url = editingSupplier
@@ -134,20 +169,26 @@ export default function SupplierManagement() {
 
       if (res.ok) {
         Toastify({
-          text: editingSupplier ? "Supplier updated!" : "Supplier created!",
-          backgroundColor: "green",
+          text: editingSupplier
+            ? "Supplier updated successfully!"
+            : "Supplier added successfully!",
+          style: { background: "linear-gradient(to right, #00b09b, #96c93d)" },
+          duration: 3000,
         }).showToast();
-        setShowSupplierModal(false);
+
         fetchSuppliers();
+        setShowSupplierModal(false);
       } else {
-        const err = await res.json();
-        Toastify({
-          text: err.message || "Failed to save supplier",
-          backgroundColor: "red",
-        }).showToast();
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to save supplier");
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error saving supplier:", error);
+      Toastify({
+        text: error.message || "Error saving supplier!",
+        style: { background: "linear-gradient(to right, #ff5f6d, #ffc371)" },
+        duration: 3000,
+      }).showToast();
     } finally {
       setLoading(false);
     }
@@ -358,6 +399,10 @@ export default function SupplierManagement() {
               <div className="text-center py-8">
                 <p className="text-gray-500">Loading suppliers...</p>
               </div>
+            ) : !Array.isArray(suppliers) ? (
+              <div className="text-center py-8 text-red-500">
+                Error: Suppliers data is invalid. Check console.
+              </div>
             ) : suppliers.filter(
                 (s) =>
                   s.companyName
@@ -368,173 +413,132 @@ export default function SupplierManagement() {
                     .includes(searchTerm.toLowerCase()) ||
                   s.email.toLowerCase().includes(searchTerm.toLowerCase())
               ).length === 0 ? (
-              <div className="text-center py-8 bg-gray-50 rounded-lg">
-                <p className="text-gray-500">
+              <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-gray-500 font-medium">
                   {searchTerm
                     ? "No suppliers found matching your search."
                     : "No suppliers found. Add your first supplier above."}
                 </p>
+                <p className="text-xs text-gray-400 mt-2">
+                  Debug: Total Suppliers: {suppliers?.length || 0}
+                </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table hoverable>
-                  <Table.Head>
-                    <Table.HeadCell>Name</Table.HeadCell>
-                    <Table.HeadCell>Contact Person</Table.HeadCell>
-                    <Table.HeadCell>Contact Info</Table.HeadCell>
-                    <Table.HeadCell>Items Supplied</Table.HeadCell>
-                    <Table.HeadCell>Rating</Table.HeadCell>
-                    <Table.HeadCell>Actions</Table.HeadCell>
-                  </Table.Head>
-                  <Table.Body className="divide-y">
+              <div className="overflow-x-auto relative shadow-md sm:rounded-lg">
+                <table className="w-full text-sm text-left text-gray-500">
+                  <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                      <th scope="col" className="py-3 px-6">
+                        Company
+                      </th>
+                      <th scope="col" className="py-3 px-6">
+                        Contact Person
+                      </th>
+                      <th scope="col" className="py-3 px-6">
+                        Contact Info
+                      </th>
+                      <th scope="col" className="py-3 px-6">
+                        Items Supplied
+                      </th>
+                      <th scope="col" className="py-3 px-6">
+                        Rating
+                      </th>
+                      <th scope="col" className="py-3 px-6">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
                     {suppliers
                       .filter(
                         (s) =>
-                          s.companyName
-                            .toLowerCase()
-                            .includes(searchTerm.toLowerCase()) ||
-                          s.contactPerson
-                            .toLowerCase()
-                            .includes(searchTerm.toLowerCase()) ||
-                          s.email
-                            .toLowerCase()
-                            .includes(searchTerm.toLowerCase())
+                          (s.companyName &&
+                            s.companyName
+                              .toLowerCase()
+                              .includes(searchTerm.toLowerCase())) ||
+                          (s.contactPerson &&
+                            s.contactPerson
+                              .toLowerCase()
+                              .includes(searchTerm.toLowerCase())) ||
+                          (s.email &&
+                            s.email
+                              .toLowerCase()
+                              .includes(searchTerm.toLowerCase()))
                       )
                       .map((s) => (
-                        <Table.Row key={s._id} className="bg-white">
-                          <Table.Cell className="font-medium text-gray-900">
+                        <tr
+                          key={s._id}
+                          className="bg-white border-b hover:bg-gray-50"
+                        >
+                          <td className="py-4 px-6 font-medium text-gray-900 whitespace-nowrap">
                             {s.companyName}
-                          </Table.Cell>
-                          <Table.Cell>{s.contactPerson}</Table.Cell>
-                          <Table.Cell>
+                          </td>
+                          <td className="py-4 px-6">{s.contactPerson}</td>
+                          <td className="py-4 px-6">
                             <div className="text-sm">{s.email}</div>
                             <div className="text-xs text-gray-500">
                               {s.phone}
                             </div>
-                          </Table.Cell>
-                          <Table.Cell>
+                          </td>
+                          <td className="py-4 px-6">
                             <div className="flex flex-wrap gap-1">
                               {s.itemsSupplied?.map((item, idx) => (
-                                <Badge key={idx} color="indigo" size="xs">
+                                <span
+                                  key={idx}
+                                  className="bg-indigo-100 text-indigo-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded"
+                                >
                                   {item}
-                                </Badge>
+                                </span>
                               )) || <span className="text-gray-400">None</span>}
                             </div>
-                          </Table.Cell>
-                          <Table.Cell>
+                          </td>
+                          <td className="py-4 px-6">
                             <div className="flex">{renderStars(s.rating)}</div>
-                          </Table.Cell>
-                          <Table.Cell>
+                          </td>
+                          <td className="py-4 px-6">
                             <div className="flex space-x-2">
                               <button
                                 onClick={() => openEditSupplier(s)}
-                                className="text-blue-600 hover:text-blue-800"
+                                className="font-medium text-blue-600 hover:underline"
                               >
-                                <HiPencilAlt className="h-5 w-5" />
+                                Edit
                               </button>
                               <button
                                 onClick={() => {
                                   setSupplierToDelete(s);
                                   setShowDeleteModal(true);
                                 }}
-                                className="text-red-600 hover:text-red-800"
+                                className="font-medium text-red-600 hover:underline"
                               >
-                                <HiTrash className="h-5 w-5" />
+                                Delete
                               </button>
                             </div>
-                          </Table.Cell>
-                        </Table.Row>
+                          </td>
+                        </tr>
                       ))}
-                  </Table.Body>
-                </Table>
+                  </tbody>
+                </table>
               </div>
             )}
           </Tabs.Item>
 
           {/* TAB 2: PURCHASE ORDERS */}
           <Tabs.Item title="Purchase Orders">
-            <div className="flex justify-between items-center mb-4 mt-4">
-              <h2 className="text-xl font-semibold">Purchase Orders</h2>
-              <Button
-                color="blue"
-                onClick={() => {
-                  setOrderFormData({
-                    supplierId: "",
-                    items: [{ foodId: "", quantity: 1, unitCost: 0 }],
-                    totalCost: 0,
-                  });
-                  setShowOrderModal(true);
-                }}
-              >
-                <HiPlus className="mr-2 h-5 w-5" /> Create Order
-              </Button>
+            <div className="p-6 bg-gray-50 rounded-lg">
+              <h2 className="text-xl font-semibold mb-4">Purchase Orders</h2>
+              <p className="text-gray-600">
+                Purchase orders functionality is coming soon...
+              </p>
+              <p className="text-gray-500 mt-2">
+                This section will allow you to:
+              </p>
+              <ul className="list-disc ml-6 mt-2 text-gray-500">
+                <li>Create purchase orders from suppliers</li>
+                <li>Track order status</li>
+                <li>Manage stock reorders</li>
+                <li>View order history</li>
+              </ul>
             </div>
-
-            {loading ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Loading purchase orders...</p>
-              </div>
-            ) : orders.length === 0 ? (
-              <div className="text-center py-8 bg-gray-50 rounded-lg">
-                <p className="text-gray-500">
-                  No purchase orders found. Create your first order above.
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table hoverable>
-                  <Table.Head>
-                    <Table.HeadCell>Order ID</Table.HeadCell>
-                    <Table.HeadCell>Supplier</Table.HeadCell>
-                    <Table.HeadCell>Total Cost</Table.HeadCell>
-                    <Table.HeadCell>Status</Table.HeadCell>
-                    <Table.HeadCell>Date</Table.HeadCell>
-                    <Table.HeadCell>Action</Table.HeadCell>
-                  </Table.Head>
-                  <Table.Body className="divide-y">
-                    {orders.map((o) => (
-                      <Table.Row key={o._id} className="bg-white">
-                        <Table.Cell className="font-mono text-xs">
-                          {o.orderId}
-                        </Table.Cell>
-                        <Table.Cell>
-                          {o.supplierId?.companyName || "N/A"}
-                        </Table.Cell>
-                        <Table.Cell className="font-semibold">
-                          {formatCurrencyWithCode(o.totalCost)}
-                        </Table.Cell>
-                        <Table.Cell>
-                          {o.status === "received" ? (
-                            <Badge color="success">Received</Badge>
-                          ) : o.status === "cancelled" ? (
-                            <Badge color="failure">Cancelled</Badge>
-                          ) : (
-                            <Badge color="warning">Pending</Badge>
-                          )}
-                        </Table.Cell>
-                        <Table.Cell className="text-xs">
-                          {new Date(o.createdAt).toLocaleDateString()}
-                        </Table.Cell>
-                        <Table.Cell>
-                          {o.status === "pending" && (
-                            <Button
-                              size="xs"
-                              color="success"
-                              onClick={() => {
-                                setOrderToReceive(o);
-                                setShowReceiveModal(true);
-                              }}
-                            >
-                              Receive
-                            </Button>
-                          )}
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table>
-              </div>
-            )}
           </Tabs.Item>
         </Tabs>
       </div>
