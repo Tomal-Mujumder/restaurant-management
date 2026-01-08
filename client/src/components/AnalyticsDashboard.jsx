@@ -159,7 +159,9 @@ export default function AnalyticsDashboard() {
       t.foodId?.foodName || "Deleted Item",
       t.transactionType,
       t.quantity,
-      t.performedBy || "Unknown",
+      typeof t.performedBy === "string"
+        ? t.performedBy
+        : t.performedBy?.username || "Unknown",
       t.reason || "No reason",
     ]);
 
@@ -459,7 +461,11 @@ export default function AnalyticsDashboard() {
                     </span>
                   </td>
                   <td className="px-6 py-4">{t.quantity}</td>
-                  <td className="px-6 py-4">{t.performedBy || "Unknown"}</td>
+                  <td className="px-6 py-4">
+                    {typeof t.performedBy === "string"
+                      ? t.performedBy
+                      : t.performedBy?.username || "Unknown"}
+                  </td>
                   <td className="px-6 py-4 text-gray-600 dark:text-gray-400">
                     {t.reason || "No reason provided"}
                   </td>

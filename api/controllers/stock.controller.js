@@ -18,6 +18,12 @@ export const updateStock = async (req, res, next) => {
     return next(errorHandler(403, "You are not allowed to update stock"));
   }
 
+  // Extract manager username
+  const managerInfo =
+    req.user.username || req.user.name || req.user.email || "Manager";
+
+  console.log(`Manual adjustment by: ${managerInfo}`);
+
   const { foodId } = req.params;
   const { quantity, reason } = req.body;
 
@@ -53,10 +59,11 @@ export const updateStock = async (req, res, next) => {
       previousQty,
       newQty,
       reason: reason || "Manual adjustment",
-      performedBy: req.user.id,
-      performedByModel: "Employee",
+      performedBy: managerInfo,
     });
     await transaction.save();
+
+    console.log(`✓ Manual adjustment logged by ${managerInfo}`);
 
     res.status(200).json(stock);
   } catch (error) {

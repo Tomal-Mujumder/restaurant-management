@@ -30,12 +30,6 @@ const stockTransactionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     required: true,
   },
-  performedByModel: {
-    type: String,
-    required: false,
-    enum: ["User", "Employee"],
-    default: "Employee",
-  },
   timestamp: {
     type: Date,
     default: Date.now,

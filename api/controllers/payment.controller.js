@@ -94,12 +94,7 @@ export const updatePayment = async (req, res, next) => {
 
     if (req.user) {
       managerInfo =
-        req.user.username ||
-        req.user.name ||
-        req.user.email ||
-        (req.user.empId ? `Manager-${req.user.empId}` : null) ||
-        (req.user.id ? `User-${req.user.id}` : null) ||
-        "Manager";
+        req.user.username || req.user.name || req.user.email || "Manager";
 
       console.log(`Manager performing action: ${managerInfo}`);
     } else {
@@ -161,7 +156,13 @@ export const updatePayment = async (req, res, next) => {
             $inc: { quantity: -item.quantity },
           });
 
-          // Create transaction log
+          // Before creating transaction, log what will be saved
+          console.log("=== About to create StockTransaction ===");
+          console.log("performedBy value:", managerInfo);
+          console.log("foodId:", stock.foodId);
+          console.log("transactionType:", "sale");
+          console.log("======================================");
+
           // Create transaction log
           await StockTransaction.create({
             foodId: stock.foodId,
@@ -169,9 +170,11 @@ export const updatePayment = async (req, res, next) => {
             quantity: item.quantity,
             previousQty: previousQty,
             newQty: previousQty - item.quantity,
-            performedBy: managerInfo, // NEW: Manager's username
+            performedBy: managerInfo,
             reason: `Order confirmed - Token: ${payment.tokenNumber}`,
           });
+
+          console.log("✓ StockTransaction created successfully");
 
           console.log(
             `✓ Stock deducted: ${item.foodName} (${previousQty} → ${
@@ -237,7 +240,12 @@ export const updatePayment = async (req, res, next) => {
             $inc: { quantity: item.quantity },
           });
 
-          // Create transaction log
+          console.log(
+            "=== About to create StockTransaction (cancellation) ==="
+          );
+          console.log("performedBy value:", managerInfo);
+          console.log("======================================");
+
           // Create transaction log
           await StockTransaction.create({
             foodId: stock.foodId,
@@ -245,9 +253,11 @@ export const updatePayment = async (req, res, next) => {
             quantity: item.quantity,
             previousQty: previousQty,
             newQty: previousQty + item.quantity,
-            performedBy: managerInfo, // NEW: Manager's username
+            performedBy: managerInfo,
             reason: `Order cancelled - Token: ${payment.tokenNumber}`,
           });
+
+          console.log("✓ StockTransaction (cancellation) created successfully");
 
           console.log(
             `✓ Stock restored: ${item.foodName} (${previousQty} → ${

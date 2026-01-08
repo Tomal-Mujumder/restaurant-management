@@ -53,8 +53,7 @@ export const getDashboardStats = async (req, res, next) => {
     const recentTransactions = await StockTransaction.find()
       .sort({ timestamp: -1 })
       .limit(50)
-      .populate("foodId", "foodName")
-      .populate("performedBy", "username");
+      .populate("foodId", "foodName");
 
     // 3. Transactions Chart Data (Over time)
     const transactionsChart = await StockTransaction.aggregate([
