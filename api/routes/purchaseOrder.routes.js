@@ -1,19 +1,21 @@
 import express from "express";
-import { verifyToken } from "../utils/verifyUser.js";
 import {
   createPurchaseOrder,
-  getAllOrders,
-  getOrderById,
-  receiveOrder,
-  cancelOrder,
+  getAllPurchaseOrders,
+  getPurchaseOrderById,
+  updatePurchaseOrder,
+  deletePurchaseOrder,
+  updateOrderStatus,
 } from "../controllers/purchaseOrder.controller.js";
+import { verifyToken } from "../utils/verifyUser.js";
 
 const router = express.Router();
 
 router.post("/create", verifyToken, createPurchaseOrder);
-router.get("/all", verifyToken, getAllOrders);
-router.get("/:id", verifyToken, getOrderById);
-router.put("/receive/:id", verifyToken, receiveOrder);
-router.put("/cancel/:id", verifyToken, cancelOrder);
+router.get("/getAll", verifyToken, getAllPurchaseOrders);
+router.get("/:id", verifyToken, getPurchaseOrderById);
+router.put("/update/:id", verifyToken, updatePurchaseOrder);
+router.delete("/delete/:id", verifyToken, deletePurchaseOrder);
+router.patch("/status/:id", verifyToken, updateOrderStatus);
 
 export default router;
