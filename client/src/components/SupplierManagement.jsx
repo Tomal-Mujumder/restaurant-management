@@ -301,9 +301,9 @@ export default function SupplierManagement() {
       <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl font-bold mb-6">Supplier Management</h1>
 
-        <Tabs.Group
+        <Tabs
           aria-label="Tabs with underline"
-          style="underline"
+          variant="underline"
           onActiveTabChange={(tab) => setActiveTab(tab)}
         >
           {/* TAB 1: SUPPLIERS */}
@@ -435,7 +435,7 @@ export default function SupplierManagement() {
               </Table>
             </div>
           </Tabs.Item>
-        </Tabs.Group>
+        </Tabs>
       </div>
 
       {/* Supplier Modal */}

@@ -14,7 +14,7 @@ const PayNow = () => {
 
   useEffect(() => {
     if (!location.state) {
-      navigate('/cart');
+      navigate("/cart");
     }
   }, [location.state, navigate]);
 
@@ -71,21 +71,23 @@ const PayNow = () => {
           gravity: "top",
           position: "right",
         }).showToast();
-        
+
         const result = await response.json();
-        
+
         // Clear cart from localStorage after successful payment
         const userId = currentUser?._id;
         if (userId) {
           const cartKey = `cart_${userId}`;
           localStorage.removeItem(cartKey);
-          
+
           // Dispatch event to update cart counter
-          window.dispatchEvent(new Event('cartUpdated'));
+          window.dispatchEvent(new Event("cartUpdated"));
         }
-        
+
         // Redirect to PaymentReceipt page with payment details
-        navigate("/payment-receipt", { state: { paymentDetails: result.payment, tokenNumber } });
+        navigate("/payment-receipt", {
+          state: { paymentDetails: result.payment, tokenNumber },
+        });
       } else {
         console.error("Payment failed");
         Toastify({
@@ -112,13 +114,24 @@ const PayNow = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen px-5 pt-16 pb-10 bg-gray-200 min-w-screen">
-      <div className="w-full p-5 mx-auto text-gray-700 bg-white rounded-lg shadow-lg" style={{ maxWidth: "600px" }}>
-        <h1 className="text-xl font-bold text-center uppercase">Secure payment info</h1>
-        <p className="my-3 text-lg font-semibold text-center">Total Price: {formatCurrencyWithCode(totalPrice)}</p>
+      <div
+        className="w-full p-5 mx-auto text-gray-700 bg-white rounded-lg shadow-lg"
+        style={{ maxWidth: "600px" }}
+      >
+        <h1 className="text-xl font-bold text-center uppercase">
+          Secure payment info
+        </h1>
+        <p className="my-3 text-lg font-semibold text-center">
+          Total Price: {formatCurrencyWithCode(totalPrice)}
+        </p>
         <form onSubmit={handlePayment}>
           <div className="mb-3">
             <label className="mb-2 text-sm font-bold">Card Type</label>
-            <select className="w-full px-3 py-2 mb-1 border-2 border-gray-200 rounded-md" name="cardType" required>
+            <select
+              className="w-full px-3 py-2 mb-1 border-2 border-gray-200 rounded-md"
+              name="cardType"
+              required
+            >
               <option value="">Select Card Type</option>
               <option value="Visa">Visa</option>
               <option value="MasterCard">MasterCard</option>
@@ -127,16 +140,32 @@ const PayNow = () => {
           </div>
           <div className="mb-3">
             <label className="mb-2 text-sm font-bold">Name on card</label>
-            <input className="w-full px-3 py-2 mb-1 border-2 border-gray-200 rounded-md" type="text" name="cardName" required />
+            <input
+              className="w-full px-3 py-2 mb-1 border-2 border-gray-200 rounded-md"
+              type="text"
+              name="cardName"
+              required
+            />
           </div>
           <div className="mb-3">
             <label className="mb-2 text-sm font-bold">Card number</label>
-            <input className="w-full px-3 py-2 mb-1 border-2 border-gray-200 rounded-md" type="text" name="cardNumber" required maxLength="16" pattern="\d{16}" />
+            <input
+              className="w-full px-3 py-2 mb-1 border-2 border-gray-200 rounded-md"
+              type="text"
+              name="cardNumber"
+              required
+              maxLength="16"
+              pattern="\d{16}"
+            />
           </div>
           <div className="flex mb-3">
             <div className="w-1/2 pr-2">
               <label className="mb-2 text-sm font-bold">Expiration Month</label>
-              <select className="w-full px-3 py-2 mb-1 border-2 border-gray-200 rounded-md" name="expirationMonth" required>
+              <select
+                className="w-full px-3 py-2 mb-1 border-2 border-gray-200 rounded-md"
+                name="expirationMonth"
+                required
+              >
                 <option value="">Month</option>
                 <option value="01">01 - January</option>
                 <option value="02">02 - February</option>
@@ -154,7 +183,11 @@ const PayNow = () => {
             </div>
             <div className="w-1/2 pl-2">
               <label className="mb-2 text-sm font-bold">Expiration Year</label>
-              <select className="w-full px-3 py-2 mb-1 border-2 border-gray-200 rounded-md" name="expirationYear" required>
+              <select
+                className="w-full px-3 py-2 mb-1 border-2 border-gray-200 rounded-md"
+                name="expirationYear"
+                required
+              >
                 <option value="">Year</option>
                 <option value="2024">2024</option>
                 <option value="2025">2025</option>
@@ -168,9 +201,21 @@ const PayNow = () => {
           </div>
           <div className="mb-3">
             <label className="mb-2 text-sm font-bold">Security Code</label>
-            <input className="w-full px-3 py-2 mb-1 border-2 border-gray-200 rounded-md" type="text" name="securityCode" required maxLength="3" pattern="\d{3}" />
+            <input
+              className="w-full px-3 py-2 mb-1 border-2 border-gray-200 rounded-md"
+              type="text"
+              name="securityCode"
+              required
+              maxLength="3"
+              pattern="\d{3}"
+            />
           </div>
-          <button type="submit" className="w-full py-2 mt-4 font-bold text-white bg-blue-500 rounded-lg hover:bg-blue-700">Pay Now</button>
+          <button
+            type="submit"
+            className="w-full py-2 mt-4 font-bold text-white bg-blue-500 rounded-lg hover:bg-blue-700"
+          >
+            Pay Now
+          </button>
         </form>
       </div>
     </div>
