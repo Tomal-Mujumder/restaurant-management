@@ -3,10 +3,11 @@ import { formatCurrencyWithCode } from "../utils/currency";
 import { Card } from "flowbite-react";
 import {
   HiChartBar,
-  HiCurrencyDollar,
+  //HiCurrencyDollar,
   HiExclamationCircle,
   HiXCircle,
 } from "react-icons/hi";
+import { TbCurrencyTaka } from "react-icons/tb";
 import {
   BarChart,
   Bar,
@@ -229,7 +230,7 @@ export default function AnalyticsDashboard() {
               </h3>
             </div>
             <div className="p-3 bg-green-100 rounded-full text-green-600 text-2xl">
-              <HiCurrencyDollar />
+              <TbCurrencyTaka />
             </div>
           </div>
         </Card>

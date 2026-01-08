@@ -20,7 +20,7 @@ export const getDashboardStats = async (req, res, next) => {
     }
 
     // 1. Basic Counts
-    const allStocks = await Stock.find().populate("foodId", "category");
+    const allStocks = await Stock.find().populate("foodId", "category price");
     const totalItems = allStocks.length;
     let totalStockValue = 0;
     let lowStockCount = 0;
@@ -28,7 +28,7 @@ export const getDashboardStats = async (req, res, next) => {
     const categoryDistribution = {};
 
     allStocks.forEach((item) => {
-      totalStockValue += item.quantity * item.costPerUnit;
+      totalStockValue += item.quantity * (item.foodId?.price || 0);
 
       if (item.quantity === 0) {
         outOfStockCount++;
