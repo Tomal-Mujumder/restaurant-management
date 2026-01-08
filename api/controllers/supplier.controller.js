@@ -4,7 +4,7 @@ import { errorHandler } from "../utils/error.js";
 
 // 1. Create Supplier
 export const createSupplier = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to add suppliers"));
   }
 
@@ -19,7 +19,7 @@ export const createSupplier = async (req, res, next) => {
 
 // 2. Get All Suppliers
 export const getAllSuppliers = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "Access denied"));
   }
   try {
@@ -32,7 +32,7 @@ export const getAllSuppliers = async (req, res, next) => {
 
 // 3. Get Supplier By ID
 export const getSupplierById = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "Access denied"));
   }
   try {
@@ -50,7 +50,7 @@ export const getSupplierById = async (req, res, next) => {
 
 // 4. Update Supplier
 export const updateSupplier = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to update suppliers"));
   }
 
@@ -70,7 +70,7 @@ export const updateSupplier = async (req, res, next) => {
 
 // 5. Delete Supplier (check for pending orders)
 export const deleteSupplier = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to delete suppliers"));
   }
 

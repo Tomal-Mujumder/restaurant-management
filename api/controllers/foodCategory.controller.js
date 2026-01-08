@@ -22,7 +22,7 @@ export const findFoodById = async (req, res, next) => {
 // Create a new food category
 export const createFoodItem = async (req, res, next) => {
   try {
-    if (req.user.role !== "Manager") {
+    if (req.user.role !== "Manager" && !req.user.isAdmin) {
       return next(
         errorHandler(403, "You are not allowed to create a food category")
       );
@@ -93,7 +93,7 @@ export const createFoodItem = async (req, res, next) => {
 export const deleteFoodItem = async (req, res, next) => {
   try {
     // if (!req.user.isAdmin) {
-    if (req.user.role !== "Manager") {
+    if (req.user.role !== "Manager" && !req.user.isAdmin) {
       return next(
         errorHandler(403, "You are not allowed to delete this food category")
       );
@@ -125,7 +125,7 @@ export const deleteFoodItem = async (req, res, next) => {
 export const updateFoodItem = async (req, res, next) => {
   try {
     // if (!req.user.isAdmin) {
-    if (req.user.role !== "Manager") {
+    if (req.user.role !== "Manager" && !req.user.isAdmin) {
       return next(
         errorHandler(403, "You are not allowed to update this food category")
       );

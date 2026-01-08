@@ -14,7 +14,7 @@ export const getAllStocks = async (req, res, next) => {
 
 // 2. Manual stock adjustment (Manager only)
 export const updateStock = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to update stock"));
   }
 
@@ -81,7 +81,7 @@ export const getStockById = async (req, res, next) => {
 
 // 4. Update min/max thresholds for a food item
 export const setThresholds = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to set thresholds"));
   }
 
@@ -106,7 +106,7 @@ export const setThresholds = async (req, res, next) => {
 
 // 5. Get items where quantity < minThreshold
 export const getLowStockItems = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "Access denied"));
   }
 

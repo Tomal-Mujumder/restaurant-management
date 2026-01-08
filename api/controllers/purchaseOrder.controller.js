@@ -5,7 +5,7 @@ import { errorHandler } from "../utils/error.js";
 
 // 1. Create Purchase Order
 export const createPurchaseOrder = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to create orders"));
   }
 
@@ -23,7 +23,7 @@ export const createPurchaseOrder = async (req, res, next) => {
 
 // 2. Get All Orders
 export const getAllOrders = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "Access denied"));
   }
   try {
@@ -39,7 +39,7 @@ export const getAllOrders = async (req, res, next) => {
 
 // 3. Get Order By ID
 export const getOrderById = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "Access denied"));
   }
   try {
@@ -58,7 +58,7 @@ export const getOrderById = async (req, res, next) => {
 
 // 4. Receive Order (Mark received, update stock, log transaction)
 export const receiveOrder = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to receive orders"));
   }
 
@@ -120,7 +120,7 @@ export const receiveOrder = async (req, res, next) => {
 
 // 5. Cancel Order
 export const cancelOrder = async (req, res, next) => {
-  if (req.user.role !== "Manager") {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to cancel orders"));
   }
 
