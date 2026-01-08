@@ -272,6 +272,7 @@ export default function FoodCategoryForm() {
                   <option value="Shorties">Shorties</option>
                   <option value="Drinks">Drinks</option>
                   <option value="Desserts">Desserts</option>
+                  <option value="Snacks">Snacks</option>
                 </select>
               </div>
 

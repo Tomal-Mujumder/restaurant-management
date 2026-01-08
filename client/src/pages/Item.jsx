@@ -1,31 +1,34 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { MdOutlineShoppingCart } from "react-icons/md";
+import { HiMenuAlt2 } from "react-icons/hi";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 import { formatCurrencyWithCode } from "../utils/currency";
 
 import FeaturedFoodCard from "../components/FeaturedFoodCard";
+import Sidebar from "../components/Sidebar";
 
 export default function Item() {
   const [foodItems, setFoodItems] = useState([]);
   const [cartCount, setCartCount] = useState(0);
-  const [searchTerm, setSearchTerm] = useState(""); // State for search term
-  const [error, setError] = useState(null); // State for handling errors
+  const [error, setError] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Filter State
+  const [filters, setFilters] = useState({
+    search: "",
+    category: "All",
+    priceRange: [0, 5000], // Default range, will be updated after data load
+  });
+
   const navigate = useNavigate();
 
-  // Fetch all food items based on search
+  // Fetch all food items initially
   const fetchFoodItems = async () => {
     try {
-      const response = await fetch(
-        `/api/foods/getAllFoods?search=${searchTerm}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const response = await fetch("/api/foods/getAllFoods");
 
       if (!response.ok) {
         throw new Error("Failed to fetch food items");
@@ -33,7 +36,7 @@ export default function Item() {
 
       const data = await response.json();
       if (data.foodItems) {
-        // Fetch stock for each item as requested
+        // Fetch stock for each item
         const itemsWithStock = await Promise.all(
           data.foodItems.map(async (item) => {
             try {
@@ -51,12 +54,12 @@ export default function Item() {
         setFoodItems(itemsWithStock);
         setError(null);
       } else {
-        setFoodItems([]); // Set empty if no items found
+        setFoodItems([]);
         setError("No items found");
       }
     } catch (error) {
       setError(error.message);
-      setFoodItems([]); // Handle error by resetting the foodItems
+      setFoodItems([]);
     }
   };
 
@@ -71,7 +74,21 @@ export default function Item() {
     }
   };
 
-  // Add food item to the cart
+  // Update price range when items are loaded
+  useEffect(() => {
+    if (foodItems.length > 0) {
+      const prices = foodItems.map((item) => item.price);
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+      // Only set if not already interacting? For now set initially to cover full range.
+      setFilters((prev) => ({
+        ...prev,
+        priceRange: [0, max + 500],
+      }));
+    }
+  }, [foodItems]);
+
+  // Add food item to the cart (Code preserved)
   const addToCart = (item) => {
     const userId = currentUser?._id;
     if (!userId) {
@@ -82,7 +99,6 @@ export default function Item() {
     const cartKey = `cart_${userId}`;
     const currentCartList = JSON.parse(localStorage.getItem(cartKey) || "[]");
 
-    // Check if item exists using consistent ID property
     const existingItemIndex = currentCartList.findIndex(
       (cartItem) => cartItem.id === item._id
     );
@@ -110,34 +126,14 @@ export default function Item() {
     }
 
     localStorage.setItem(cartKey, JSON.stringify(currentCartList));
-    setCartCount(currentCartList.length); // This might be redundant if the header handles it, but keeps local state in sync if used
+    setCartCount(currentCartList.length);
 
-    // Dispatch event AFTER localStorage update
     window.dispatchEvent(new Event("cartUpdated"));
     window.dispatchEvent(new Event("storage"));
 
     showToast("Item added to cart!");
   };
 
-  // Handle "Buy Now" button click
-  const handleBuyNow = (item) => {
-    if (!currentUser?._id) {
-      showToast("Please login first to add items to cart", "error");
-      navigate("/signin");
-      return;
-    }
-    // Check stock before navigating
-    const availableStock = item.stock || 0;
-    if (availableStock < 1) {
-      showToast("Out of stock", "error");
-      return;
-    }
-    addToCart(item);
-    window.dispatchEvent(new Event("cartUpdated"));
-    navigate(`/shoppingCart`);
-  };
-
-  // Show toast notification
   const showToast = (message, type = "success") => {
     Toastify({
       text: message,
@@ -155,69 +151,136 @@ export default function Item() {
   useEffect(() => {
     fetchFoodItems();
     updateCartCount();
-  }, [searchTerm]); // Re-fetch food items on search term change
+  }, []);
 
   const { currentUser } = useSelector((state) => state.user);
 
+  // --- Derived State for Filters ---
+
+  // 1. Dynamic Categories
+  const categories = useMemo(() => {
+    // Get unique categories from foodItems
+    const uniqueCats = [...new Set(foodItems.map((item) => item.category))];
+    // Filter out undefined/null if any
+    return uniqueCats.filter(Boolean).sort();
+  }, [foodItems]);
+
+  // 2. Min/Max Price for Slider Bounds
+  const { minPrice, maxPrice } = useMemo(() => {
+    if (foodItems.length === 0) return { minPrice: 0, maxPrice: 1000 };
+    const prices = foodItems.map((item) => item.price);
+    return {
+      minPrice: Math.min(...prices),
+      maxPrice: Math.max(...prices),
+    };
+  }, [foodItems]);
+
+  // 3. Filtered Items Logic
+  const filteredItems = useMemo(() => {
+    return foodItems.filter((item) => {
+      const matchesSearch = item.foodName
+        .toLowerCase()
+        .includes(filters.search.toLowerCase());
+      const matchesCategory =
+        filters.category === "All" || item.category === filters.category;
+      const matchesPrice =
+        item.price >= filters.priceRange[0] &&
+        item.price <= filters.priceRange[1];
+
+      return matchesSearch && matchesCategory && matchesPrice;
+    });
+  }, [foodItems, filters]);
+
   return (
-    <div className="min-h-screen">
-      {/* Top bar with "Add Your Item", Cart and Search */}
-      <div className="flex items-center justify-between p-4 bg-gray-100">
-        {/* <h1 className="text-2xl font-bold text-gray-700">Add Your Item</h1> */}
-        <div className="flex items-center gap-4"></div>
-        <div className="relative max-w-md">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <svg
-              className="w-5 h-5 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Top Bar */}
+      <div className="bg-white shadow-sm sticky top-0 z-40">
+        <div className="max-w-[1400px] mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {/* Mobile Sidebar Toggle */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+              <HiMenuAlt2 size={24} />
+            </button>
+            <h1 className="text-xl font-bold text-gray-800 hidden sm:block">
+              Menu
+            </h1>
           </div>
-          <input
-            type="text"
-            placeholder="Search Food..."
-            className="block w-full pl-20 pr-4 py-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-blue-500 focus:border-blue-500 focus:bg-white focus:shadow-lg transition-all"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="relative flex items-center">
-          <Link to={`/shoppingCart`}>
-            <span className="text-3xl text-black">
-              <MdOutlineShoppingCart />
-            </span>
-          </Link>
-          <div className="absolute flex items-center justify-center w-5 h-5 p-1 text-white bg-black rounded-full -top-2 -right-2">
-            <p className="text-sm">{cartCount}</p>
+
+          <div className="relative flex items-center gap-4">
+            <Link to={`/shoppingCart`} className="relative group">
+              <span className="text-3xl text-gray-700 group-hover:text-[#e93b92] transition-colors">
+                <MdOutlineShoppingCart />
+              </span>
+              {cartCount > 0 && (
+                <div className="absolute -top-2 -right-2 w-5 h-5 bg-[#e93b92] text-white text-xs font-bold flex items-center justify-center rounded-full">
+                  {cartCount}
+                </div>
+              )}
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex items-center justify-center pb-20">
-        <div className="max-w-[1200px] mx-auto">
+      <div className="flex flex-1 max-w-[1400px] w-full mx-auto relative items-start">
+        {/* Sidebar Component */}
+        <Sidebar
+          filters={filters}
+          setFilters={setFilters}
+          categories={categories}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          isOpen={isSidebarOpen}
+          toggleSidebar={() => setIsSidebarOpen(false)}
+        />
+
+        {/* Main Content */}
+        <main className="flex-1 p-4 lg:p-6 w-full">
           {error ? (
-            <p className="text-red-600 dark:text-red-400">{error}</p>
-          ) : foodItems.length === 0 ? (
-            <p className="text-gray-600 dark:text-gray-400">
-              No items available
-            </p>
+            <div className="text-center py-10">
+              <p className="text-red-500">{error}</p>
+              <button
+                onClick={fetchFoodItems}
+                className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                Retry
+              </button>
+            </div>
+          ) : filteredItems.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="mb-4 text-gray-300 text-6xl flex justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-24 w-24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1}
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-medium text-gray-900">
+                No items found
+              </h3>
+              <p className="text-gray-500 mt-1">
+                Try adjusting your filters to find what you're looking for.
+              </p>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {foodItems.map((item) => (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+              {filteredItems.map((item) => (
                 <FeaturedFoodCard key={item._id} food={item} />
               ))}
             </div>
           )}
-        </div>
+        </main>
       </div>
     </div>
   );
