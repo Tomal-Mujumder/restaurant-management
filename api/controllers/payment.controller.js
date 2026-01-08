@@ -2,7 +2,9 @@ import Payment from "../models/Payment.model.js";
 import User from "../models/user.model.js";
 import Employee from "../models/employee.model.js";
 import { errorHandler } from "../utils/error.js";
-import { deductStockFromCart } from "../utils/stockHelper.js";
+import Stock from "../models/stock.model.js";
+import StockTransaction from "../models/stockTransaction.model.js";
+import mongoose from "mongoose";
 
 // Save payment details to database
 export const savePayment = async (req, res, next) => {
@@ -21,19 +23,7 @@ export const savePayment = async (req, res, next) => {
 
     await payment.save();
 
-    try {
-      // Use helper to deduct stock for each item
-      await deductStockFromCart(cartItems, userId, tokenNumber, "User");
-
-      res.status(201).json({ message: "Payment successful", payment });
-    } catch (error) {
-      console.error("Stock deduction failed:", error);
-      // Attempt to delete payment to maintain consistency
-      if (payment._id) {
-        await Payment.findByIdAndDelete(payment._id);
-      }
-      return next(error); // error from helper or deletion
-    }
+    res.status(201).json({ message: "Payment successful", payment });
   } catch (error) {
     console.error("Payment initialization failed:", error);
     next(errorHandler(500, "Payment failed"));
@@ -75,36 +65,118 @@ export const updatePayment = async (req, res, next) => {
   const { isChecked } = req.body;
 
   try {
-    // Check if `isChecked` is provided
+    // Check if isChecked is provided
     if (typeof isChecked === "undefined") {
-      return next(errorHandler(400, "isChecked field is required"));
+      return next(
+        errorHandler(400, { message: "isChecked field is required" })
+      );
     }
 
-    // Find the payment record by ID
+    // Find the payment record
     const payment = await Payment.findById(paymentId);
 
-    // Handle payment not found scenario
     if (!payment) {
-      return next(errorHandler(404, "Payment not found"));
+      return next(errorHandler(404, { message: "Payment not found" }));
     }
 
-    // Update the payment status
-    payment.isChecked = isChecked;
+    // If marking as complete (isChecked = true) and not already completed
+    if (isChecked === true && payment.isChecked === false) {
+      console.log(
+        `Processing payment completion for Token: ${payment.tokenNumber}`
+      );
 
-    // Save the updated payment
+      // Deduct stock for all items
+      try {
+        for (const item of payment.cartItems) {
+          console.log(
+            `Processing item: ${item.foodName}, Quantity: ${item.quantity}`
+          );
+
+          // Find stock record - item might not have foodId stored
+          // We need to find by foodName as backup
+          let stock = null;
+
+          if (item.foodId) {
+            stock = await Stock.findOne({ foodId: item.foodId });
+          }
+
+          // If not found by foodId, try finding FoodItem by name then get stock
+          if (!stock) {
+            const foodItem = await mongoose.model("FoodItem").findOne({
+              foodName: item.foodName,
+            });
+
+            if (foodItem) {
+              stock = await Stock.findOne({ foodId: foodItem._id });
+            }
+          }
+
+          if (!stock) {
+            console.log(`⚠️ Stock record not found for ${item.foodName}`);
+            return res.status(404).json({
+              message: `Stock record not found for ${item.foodName}. Please create stock record first.`,
+            });
+          }
+
+          console.log(`Current stock for ${item.foodName}: ${stock.quantity}`);
+
+          // Check if sufficient stock
+          if (stock.quantity < item.quantity) {
+            return res.status(400).json({
+              message: `Insufficient stock for ${item.foodName}. Available: ${stock.quantity}, Required: ${item.quantity}`,
+            });
+          }
+
+          // Store previous quantity
+          const previousQty = stock.quantity;
+
+          // Deduct stock
+          await Stock.findByIdAndUpdate(stock._id, {
+            $inc: { quantity: -item.quantity },
+          });
+
+          // Create stock transaction
+          await StockTransaction.create({
+            foodId: stock.foodId,
+            transactionType: "sale",
+            quantity: item.quantity,
+            previousQty: previousQty,
+            newQty: previousQty - item.quantity,
+            performedBy: payment.userId,
+            reason: `Order completed by manager - Token: ${payment.tokenNumber}`,
+          });
+
+          console.log(
+            `✓ Stock deducted for ${item.foodName}: ${previousQty} → ${
+              previousQty - item.quantity
+            }`
+          );
+        }
+
+        console.log(
+          `✓ All stock deducted successfully for Token: ${payment.tokenNumber}`
+        );
+      } catch (stockError) {
+        console.error("Stock deduction error:", stockError);
+        return res.status(500).json({
+          message: `Failed to deduct stock: ${stockError.message}`,
+        });
+      }
+    }
+
+    // Update payment status
+    payment.isChecked = isChecked;
     const updatedPayment = await payment.save();
 
-    // Return successful response with updated payment data
     res.status(200).json({
-      message: "Payment status updated successfully",
+      message: isChecked
+        ? "Payment completed and stock updated"
+        : "Payment status updated",
       payment: updatedPayment,
     });
   } catch (error) {
-    // Log the error for debugging purposes
     console.error("Error updating payment:", error);
-
-    // Forward the error to the error handler middleware
-    next(errorHandler(500, "Failed to update payment"));
+    next(errorHandler(500, { message: "Failed to update payment" }));
   }
 };
 

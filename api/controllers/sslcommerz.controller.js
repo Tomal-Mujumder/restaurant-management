@@ -89,12 +89,10 @@ export const initPayment = async (req, res, next) => {
         Payment.findOneAndDelete({
           "paymentInfo.cardNumber": transactionId,
         }).exec();
-        res
-          .status(400)
-          .json({
-            success: false,
-            message: "SSLCommerz Session was not successful",
-          });
+        res.status(400).json({
+          success: false,
+          message: "SSLCommerz Session was not successful",
+        });
       }
     });
   } catch (error) {
@@ -137,21 +135,6 @@ export const paymentSuccess = async (req, res, next) => {
             "paymentInfo.securityCode": "Gateway Payment",
           },
         });
-
-        // Deduct Stock
-        try {
-          await deductStockFromCart(
-            pendingPayment.cartItems,
-            pendingPayment.userId,
-            pendingPayment.tokenNumber,
-            "User"
-          );
-        } catch (stockError) {
-          console.error("Stock deduction failed for SSLCommerz:", stockError);
-          // Note: Since money is already deducted at this point in SSLCommerz,
-          // we should ideally mark the order for manual review instead of just failing.
-          // But for now, we'll try to deduct and log errors.
-        }
 
         // Redirect to success page
         res.redirect(
