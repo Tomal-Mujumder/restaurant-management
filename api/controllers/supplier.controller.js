@@ -9,7 +9,49 @@ export const createSupplier = async (req, res, next) => {
   }
 
   try {
-    const newSupplier = new Supplier(req.body);
+    const {
+      companyName,
+      contactPerson,
+      phone,
+      email,
+      address,
+      itemsSupplied,
+      rating,
+    } = req.body;
+
+    // Validation
+    if (
+      !companyName ||
+      !contactPerson ||
+      !phone ||
+      !email ||
+      !address ||
+      !itemsSupplied ||
+      itemsSupplied.length === 0
+    ) {
+      return next(errorHandler(400, "All fields are required"));
+    }
+
+    // Phone validation
+    if (!/^\d{11}$/.test(phone)) {
+      return next(errorHandler(400, "Phone number must be exactly 11 digits"));
+    }
+
+    // Email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return next(errorHandler(400, "Invalid email format"));
+    }
+
+    const newSupplier = new Supplier({
+      companyName,
+      contactPerson,
+      phone,
+      email,
+      address,
+      itemsSupplied,
+      rating,
+    });
+
     const savedSupplier = await newSupplier.save();
     res.status(201).json(savedSupplier);
   } catch (error) {
@@ -23,7 +65,7 @@ export const getAllSuppliers = async (req, res, next) => {
     return next(errorHandler(403, "Access denied"));
   }
   try {
-    const suppliers = await Supplier.find().populate("itemsSupplied");
+    const suppliers = await Supplier.find().sort({ createdAt: -1 });
     res.status(200).json(suppliers);
   } catch (error) {
     next(error);
@@ -36,9 +78,7 @@ export const getSupplierById = async (req, res, next) => {
     return next(errorHandler(403, "Access denied"));
   }
   try {
-    const supplier = await Supplier.findById(req.params.id).populate(
-      "itemsSupplied"
-    );
+    const supplier = await Supplier.findById(req.params.id);
     if (!supplier) {
       return next(errorHandler(404, "Supplier not found"));
     }
@@ -55,40 +95,64 @@ export const updateSupplier = async (req, res, next) => {
   }
 
   try {
+    const {
+      companyName,
+      contactPerson,
+      phone,
+      email,
+      address,
+      itemsSupplied,
+      rating,
+    } = req.body;
+
+    // Phone validation if provided
+    if (phone && !/^\d{11}$/.test(phone)) {
+      return next(errorHandler(400, "Phone number must be exactly 11 digits"));
+    }
+
+    // Email validation if provided
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return next(errorHandler(400, "Invalid email format"));
+    }
+
     const updatedSupplier = await Supplier.findByIdAndUpdate(
       req.params.id,
       {
-        $set: req.body,
+        $set: {
+          companyName,
+          contactPerson,
+          phone,
+          email,
+          address,
+          itemsSupplied,
+          rating,
+        },
       },
       { new: true }
     );
+
+    if (!updatedSupplier) {
+      return next(errorHandler(404, "Supplier not found"));
+    }
+
     res.status(200).json(updatedSupplier);
   } catch (error) {
     next(error);
   }
 };
 
-// 5. Delete Supplier (check for pending orders)
+// 5. Delete Supplier
 export const deleteSupplier = async (req, res, next) => {
   if (req.user.role !== "Manager" && !req.user.isAdmin) {
     return next(errorHandler(403, "You are not allowed to delete suppliers"));
   }
 
   try {
-    // Check for pending orders
-    const pendingOrders = await PurchaseOrder.findOne({
-      supplierId: req.params.id,
-      status: "pending",
-    });
-
-    if (pendingOrders) {
-      return next(
-        errorHandler(400, "Cannot delete supplier with pending orders")
-      );
+    const deletedSupplier = await Supplier.findByIdAndDelete(req.params.id);
+    if (!deletedSupplier) {
+      return next(errorHandler(404, "Supplier not found"));
     }
-
-    await Supplier.findByIdAndDelete(req.params.id);
-    res.status(200).json("Supplier has been deleted");
+    res.status(200).json({ message: "Supplier deleted successfully" });
   } catch (error) {
     next(error);
   }

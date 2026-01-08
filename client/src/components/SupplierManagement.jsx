@@ -34,13 +34,13 @@ export default function SupplierManagement() {
   const [showSupplierModal, setShowSupplierModal] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
   const [supplierFormData, setSupplierFormData] = useState({
-    name: "",
+    companyName: "",
     contactPerson: "",
     email: "",
     phone: "",
     address: "",
     itemsSupplied: [],
-    rating: 3,
+    rating: "5 Stars",
   });
 
   // Purchase Order Form States
@@ -61,25 +61,39 @@ export default function SupplierManagement() {
 
   const fetchSuppliers = async () => {
     try {
+      setLoading(true);
       const res = await fetch("/api/supplier/all", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
-      if (res.ok) setSuppliers(data);
+      if (res.ok) {
+        setSuppliers(data);
+      } else {
+        console.error("Failed to fetch suppliers:", data.message);
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching suppliers:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchOrders = async () => {
     try {
+      setLoading(true);
       const res = await fetch("/api/purchaseorder/all", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
-      if (res.ok) setOrders(data);
+      if (res.ok) {
+        setOrders(data);
+      } else {
+        console.error("Failed to fetch orders:", data.message);
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -142,13 +156,13 @@ export default function SupplierManagement() {
   const openAddSupplier = () => {
     setEditingSupplier(null);
     setSupplierFormData({
-      name: "",
+      companyName: "",
       contactPerson: "",
       email: "",
       phone: "",
       address: "",
       itemsSupplied: [],
-      rating: 3,
+      rating: "5 Stars",
     });
     setShowSupplierModal(true);
   };
@@ -156,12 +170,12 @@ export default function SupplierManagement() {
   const openEditSupplier = (supplier) => {
     setEditingSupplier(supplier);
     setSupplierFormData({
-      name: supplier.name,
+      companyName: supplier.companyName,
       contactPerson: supplier.contactPerson,
       email: supplier.email,
       phone: supplier.phone,
       address: supplier.address,
-      itemsSupplied: supplier.itemsSupplied.map((i) => i._id || i),
+      itemsSupplied: supplier.itemsSupplied || [],
       rating: supplier.rating,
     });
     setShowSupplierModal(true);
@@ -208,11 +222,12 @@ export default function SupplierManagement() {
 
       if (res.ok) {
         Toastify({
-          text: "Order created!",
+          text: "Purchase order created successfully!",
           backgroundColor: "green",
         }).showToast();
         setShowOrderModal(false);
-        fetchOrders();
+        // Refresh the orders list
+        await fetchOrders();
       } else {
         const err = await res.json();
         Toastify({
@@ -222,6 +237,10 @@ export default function SupplierManagement() {
       }
     } catch (error) {
       console.error(error);
+      Toastify({
+        text: "Error creating order",
+        backgroundColor: "red",
+      }).showToast();
     } finally {
       setLoading(false);
     }
@@ -262,6 +281,7 @@ export default function SupplierManagement() {
 
   const handleReceiveOrder = async () => {
     try {
+      setLoading(true);
       const res = await fetch(
         `/api/purchaseorder/receive/${orderToReceive._id}`,
         {
@@ -274,8 +294,9 @@ export default function SupplierManagement() {
           text: "Order received & Stock updated!",
           backgroundColor: "green",
         }).showToast();
-        fetchOrders();
         setShowReceiveModal(false);
+        // Refresh the orders list
+        await fetchOrders();
       } else {
         const err = await res.json();
         Toastify({
@@ -285,14 +306,22 @@ export default function SupplierManagement() {
       }
     } catch (error) {
       console.error(error);
+      Toastify({
+        text: "Error receiving order",
+        backgroundColor: "red",
+      }).showToast();
+    } finally {
+      setLoading(false);
     }
   };
 
   const renderStars = (rating) => {
+    // Extract number from rating string like "5 Stars" -> 5
+    const numStars = parseInt(rating) || 0;
     return Array.from({ length: 5 }, (_, i) => (
       <HiStar
         key={i}
-        className={i < rating ? "text-yellow-400" : "text-gray-300"}
+        className={i < numStars ? "text-yellow-400" : "text-gray-300"}
       />
     ));
   };
@@ -325,80 +354,107 @@ export default function SupplierManagement() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <Table hoverable>
-                <Table.Head>
-                  <Table.HeadCell>Name</Table.HeadCell>
-                  <Table.HeadCell>Contact Person</Table.HeadCell>
-                  <Table.HeadCell>Contact Info</Table.HeadCell>
-                  <Table.HeadCell>Items Supplied</Table.HeadCell>
-                  <Table.HeadCell>Rating</Table.HeadCell>
-                  <Table.HeadCell>Actions</Table.HeadCell>
-                </Table.Head>
-                <Table.Body className="divide-y">
-                  {suppliers
-                    .filter(
-                      (s) =>
-                        s.name
-                          .toLowerCase()
-                          .includes(searchTerm.toLowerCase()) ||
-                        s.contactPerson
-                          .toLowerCase()
-                          .includes(searchTerm.toLowerCase()) ||
-                        s.email.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
-                    .map((s) => (
-                      <Table.Row key={s._id} className="bg-white">
-                        <Table.Cell className="font-medium text-gray-900">
-                          {s.name}
-                        </Table.Cell>
-                        <Table.Cell>{s.contactPerson}</Table.Cell>
-                        <Table.Cell>
-                          <div className="text-sm">{s.email}</div>
-                          <div className="text-xs text-gray-500">{s.phone}</div>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <div className="flex flex-wrap gap-1">
-                            {s.itemsSupplied?.map((item) => (
-                              <Badge key={item._id} color="indigo" size="xs">
-                                {item.foodName}
-                              </Badge>
-                            )) || <span className="text-gray-400">None</span>}
-                          </div>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <div className="flex">{renderStars(s.rating)}</div>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => openEditSupplier(s)}
-                              className="text-blue-600 hover:text-blue-800"
-                            >
-                              <HiPencilAlt className="h-5 w-5" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSupplierToDelete(s);
-                                setShowDeleteModal(true);
-                              }}
-                              className="text-red-600 hover:text-red-800"
-                            >
-                              <HiTrash className="h-5 w-5" />
-                            </button>
-                          </div>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                </Table.Body>
-              </Table>
-            </div>
+            {loading ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Loading suppliers...</p>
+              </div>
+            ) : suppliers.filter(
+                (s) =>
+                  s.companyName
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase()) ||
+                  s.contactPerson
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase()) ||
+                  s.email.toLowerCase().includes(searchTerm.toLowerCase())
+              ).length === 0 ? (
+              <div className="text-center py-8 bg-gray-50 rounded-lg">
+                <p className="text-gray-500">
+                  {searchTerm
+                    ? "No suppliers found matching your search."
+                    : "No suppliers found. Add your first supplier above."}
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table hoverable>
+                  <Table.Head>
+                    <Table.HeadCell>Name</Table.HeadCell>
+                    <Table.HeadCell>Contact Person</Table.HeadCell>
+                    <Table.HeadCell>Contact Info</Table.HeadCell>
+                    <Table.HeadCell>Items Supplied</Table.HeadCell>
+                    <Table.HeadCell>Rating</Table.HeadCell>
+                    <Table.HeadCell>Actions</Table.HeadCell>
+                  </Table.Head>
+                  <Table.Body className="divide-y">
+                    {suppliers
+                      .filter(
+                        (s) =>
+                          s.companyName
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase()) ||
+                          s.contactPerson
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase()) ||
+                          s.email
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase())
+                      )
+                      .map((s) => (
+                        <Table.Row key={s._id} className="bg-white">
+                          <Table.Cell className="font-medium text-gray-900">
+                            {s.companyName}
+                          </Table.Cell>
+                          <Table.Cell>{s.contactPerson}</Table.Cell>
+                          <Table.Cell>
+                            <div className="text-sm">{s.email}</div>
+                            <div className="text-xs text-gray-500">
+                              {s.phone}
+                            </div>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <div className="flex flex-wrap gap-1">
+                              {s.itemsSupplied?.map((item, idx) => (
+                                <Badge key={idx} color="indigo" size="xs">
+                                  {item}
+                                </Badge>
+                              )) || <span className="text-gray-400">None</span>}
+                            </div>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <div className="flex">{renderStars(s.rating)}</div>
+                          </Table.Cell>
+                          <Table.Cell>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => openEditSupplier(s)}
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                <HiPencilAlt className="h-5 w-5" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSupplierToDelete(s);
+                                  setShowDeleteModal(true);
+                                }}
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                <HiTrash className="h-5 w-5" />
+                              </button>
+                            </div>
+                          </Table.Cell>
+                        </Table.Row>
+                      ))}
+                  </Table.Body>
+                </Table>
+              </div>
+            )}
           </Tabs.Item>
 
           {/* TAB 2: PURCHASE ORDERS */}
           <Tabs.Item title="Purchase Orders">
             <div className="flex justify-between items-center mb-4 mt-4">
-              <h2 className="text-xl font-semibold">Stock Reorders</h2>
+              <h2 className="text-xl font-semibold">Purchase Orders</h2>
               <Button
                 color="blue"
                 onClick={() => {
@@ -414,57 +470,71 @@ export default function SupplierManagement() {
               </Button>
             </div>
 
-            <div className="overflow-x-auto">
-              <Table hoverable>
-                <Table.Head>
-                  <Table.HeadCell>Order ID</Table.HeadCell>
-                  <Table.HeadCell>Supplier</Table.HeadCell>
-                  <Table.HeadCell>Total Cost</Table.HeadCell>
-                  <Table.HeadCell>Status</Table.HeadCell>
-                  <Table.HeadCell>Date</Table.HeadCell>
-                  <Table.HeadCell>Action</Table.HeadCell>
-                </Table.Head>
-                <Table.Body className="divide-y">
-                  {orders.map((o) => (
-                    <Table.Row key={o._id} className="bg-white">
-                      <Table.Cell className="font-mono text-xs">
-                        {o.orderId}
-                      </Table.Cell>
-                      <Table.Cell>{o.supplierId?.name || "N/A"}</Table.Cell>
-                      <Table.Cell className="font-semibold">
-                        {formatCurrencyWithCode(o.totalCost)}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {o.status === "received" ? (
-                          <Badge color="success">Received</Badge>
-                        ) : o.status === "cancelled" ? (
-                          <Badge color="failure">Cancelled</Badge>
-                        ) : (
-                          <Badge color="warning">Pending</Badge>
-                        )}
-                      </Table.Cell>
-                      <Table.Cell className="text-xs">
-                        {new Date(o.createdAt).toLocaleDateString()}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {o.status === "pending" && (
-                          <Button
-                            size="xs"
-                            color="success"
-                            onClick={() => {
-                              setOrderToReceive(o);
-                              setShowReceiveModal(true);
-                            }}
-                          >
-                            Receive
-                          </Button>
-                        )}
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table>
-            </div>
+            {loading ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Loading purchase orders...</p>
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="text-center py-8 bg-gray-50 rounded-lg">
+                <p className="text-gray-500">
+                  No purchase orders found. Create your first order above.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table hoverable>
+                  <Table.Head>
+                    <Table.HeadCell>Order ID</Table.HeadCell>
+                    <Table.HeadCell>Supplier</Table.HeadCell>
+                    <Table.HeadCell>Total Cost</Table.HeadCell>
+                    <Table.HeadCell>Status</Table.HeadCell>
+                    <Table.HeadCell>Date</Table.HeadCell>
+                    <Table.HeadCell>Action</Table.HeadCell>
+                  </Table.Head>
+                  <Table.Body className="divide-y">
+                    {orders.map((o) => (
+                      <Table.Row key={o._id} className="bg-white">
+                        <Table.Cell className="font-mono text-xs">
+                          {o.orderId}
+                        </Table.Cell>
+                        <Table.Cell>
+                          {o.supplierId?.companyName || "N/A"}
+                        </Table.Cell>
+                        <Table.Cell className="font-semibold">
+                          {formatCurrencyWithCode(o.totalCost)}
+                        </Table.Cell>
+                        <Table.Cell>
+                          {o.status === "received" ? (
+                            <Badge color="success">Received</Badge>
+                          ) : o.status === "cancelled" ? (
+                            <Badge color="failure">Cancelled</Badge>
+                          ) : (
+                            <Badge color="warning">Pending</Badge>
+                          )}
+                        </Table.Cell>
+                        <Table.Cell className="text-xs">
+                          {new Date(o.createdAt).toLocaleDateString()}
+                        </Table.Cell>
+                        <Table.Cell>
+                          {o.status === "pending" && (
+                            <Button
+                              size="xs"
+                              color="success"
+                              onClick={() => {
+                                setOrderToReceive(o);
+                                setShowReceiveModal(true);
+                              }}
+                            >
+                              Receive
+                            </Button>
+                          )}
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table>
+              </div>
+            )}
           </Tabs.Item>
         </Tabs>
       </div>
@@ -484,11 +554,11 @@ export default function SupplierManagement() {
               <Label value="Company Name" />
               <TextInput
                 required
-                value={supplierFormData.name}
+                value={supplierFormData.companyName}
                 onChange={(e) =>
                   setSupplierFormData({
                     ...supplierFormData,
-                    name: e.target.value,
+                    companyName: e.target.value,
                   })
                 }
               />
@@ -552,27 +622,24 @@ export default function SupplierManagement() {
             <div>
               <Label value="Items Supplied" />
               <div className="flex flex-wrap gap-2 mb-2">
-                {supplierFormData.itemsSupplied.map((itemId) => {
-                  const item = foodItems.find((fi) => fi._id === itemId);
-                  return (
-                    <Badge
-                      key={itemId}
-                      color="info"
-                      size="sm"
-                      className="cursor-pointer"
-                      onClick={() => {
-                        setSupplierFormData({
-                          ...supplierFormData,
-                          itemsSupplied: supplierFormData.itemsSupplied.filter(
-                            (id) => id !== itemId
-                          ),
-                        });
-                      }}
-                    >
-                      {item ? item.foodName : "Unknown"} ✖
-                    </Badge>
-                  );
-                })}
+                {supplierFormData.itemsSupplied.map((itemName, idx) => (
+                  <Badge
+                    key={idx}
+                    color="info"
+                    size="sm"
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setSupplierFormData({
+                        ...supplierFormData,
+                        itemsSupplied: supplierFormData.itemsSupplied.filter(
+                          (name) => name !== itemName
+                        ),
+                      });
+                    }}
+                  >
+                    {itemName} ✖
+                  </Badge>
+                ))}
               </div>
               <Select
                 onChange={(e) => {
@@ -594,10 +661,11 @@ export default function SupplierManagement() {
                 <option value="">Add item to supplier...</option>
                 {foodItems
                   .filter(
-                    (item) => !supplierFormData.itemsSupplied.includes(item._id)
+                    (item) =>
+                      !supplierFormData.itemsSupplied.includes(item.foodName)
                   )
                   .map((item) => (
-                    <option key={item._id} value={item._id}>
+                    <option key={item._id} value={item.foodName}>
                       {item.foodName}
                     </option>
                   ))}
@@ -610,28 +678,48 @@ export default function SupplierManagement() {
                 onChange={(e) =>
                   setSupplierFormData({
                     ...supplierFormData,
-                    rating: Number(e.target.value),
+                    rating: e.target.value,
                   })
                 }
               >
-                {[1, 2, 3, 4, 5].map((v) => (
-                  <option key={v} value={v}>
-                    {v} Stars
-                  </option>
-                ))}
+                {["1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"].map(
+                  (v) => (
+                    <option key={v} value={v}>
+                      {v}
+                    </option>
+                  )
+                )}
               </Select>
             </div>
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-end gap-4 mt-6">
+              <Button
+                color="gray"
+                onClick={() => {
+                  setShowSupplierModal(false);
+                  setEditingSupplier(null);
+                  setSupplierFormData({
+                    companyName: "",
+                    contactPerson: "",
+                    email: "",
+                    phone: "",
+                    address: "",
+                    itemsSupplied: [],
+                    rating: "5 Stars",
+                  });
+                }}
+              >
+                Cancel
+              </Button>
               <Button
                 type="submit"
-                gradientDuoTone="purpleToBlue"
+                className="bg-blue-600 hover:bg-blue-700"
                 disabled={loading}
               >
                 {loading
                   ? "Saving..."
                   : editingSupplier
                   ? "Update Supplier"
-                  : "Create Supplier"}
+                  : "Add Supplier"}
               </Button>
             </div>
           </form>
@@ -662,7 +750,7 @@ export default function SupplierManagement() {
                 <option value="">Select Supplier</option>
                 {suppliers.map((s) => (
                   <option key={s._id} value={s._id}>
-                    {s.name}
+                    {s.companyName}
                   </option>
                 ))}
               </Select>
