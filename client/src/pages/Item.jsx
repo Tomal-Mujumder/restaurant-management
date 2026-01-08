@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { MdOutlineShoppingCart } from "react-icons/md";
-import { HiMenuAlt2 } from "react-icons/hi";
+import { HiMenuAlt2, HiFilter } from "react-icons/hi";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 import { formatCurrencyWithCode } from "../utils/currency";
@@ -15,6 +15,24 @@ export default function Item() {
   const [cartCount, setCartCount] = useState(0);
   const [error, setError] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Open sidebar by default on large screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsSidebarOpen(true);
+      } else {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    // Set initial state
+    handleResize();
+
+    // Add event listener
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Filter State
   const [filters, setFilters] = useState({
@@ -197,12 +215,12 @@ export default function Item() {
       <div className="bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-[1400px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            {/* Mobile Sidebar Toggle */}
+            {/* Sidebar Toggle - Visible on all devices */}
             <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-full"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="flex items-center gap-2 bg-[#e93b92] text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors shadow-sm"
             >
-              <HiMenuAlt2 size={24} />
+              <HiFilter /> {isSidebarOpen ? "Hide Filters" : "Show Filters"}
             </button>
             <h1 className="text-xl font-bold text-gray-800 hidden sm:block">
               Menu

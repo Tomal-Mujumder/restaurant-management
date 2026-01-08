@@ -20,14 +20,31 @@ export default function Sidebar({
   };
 
   const handlePriceChange = (e, type) => {
-    const value = parseInt(e.target.value) || 0;
-    setFilters({
-      ...filters,
-      priceRange:
-        type === "min"
-          ? [value, filters.priceRange[1]]
-          : [filters.priceRange[0], value],
-    });
+    // Ensure value is a valid number, fallback to appropriate bound
+    let value = parseInt(e.target.value);
+
+    if (isNaN(value)) {
+      return; // Or handle generically
+    }
+
+    const currentMin = filters.priceRange[0];
+    const currentMax = filters.priceRange[1];
+
+    if (type === "min") {
+      // Optional: Prevent min from crossing max
+      // if (value > currentMax) value = currentMax;
+      setFilters({
+        ...filters,
+        priceRange: [value, currentMax],
+      });
+    } else {
+      // Optional: Prevent max from crossing min
+      // if (value < currentMin) value = currentMin;
+      setFilters({
+        ...filters,
+        priceRange: [currentMin, value],
+      });
+    }
   };
 
   const resetFilters = () => {
@@ -43,18 +60,21 @@ export default function Sidebar({
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
           onClick={toggleSidebar}
         />
       )}
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-72 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 overflow-y-auto ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`bg-white shadow-xl h-screen transition-all duration-300 ease-in-out z-40 fixed md:relative left-0 top-0 overflow-y-auto overflow-x-hidden
+        ${
+          isOpen
+            ? "translate-x-0 w-72"
+            : "-translate-x-full md:translate-x-0 md:w-0"
         }`}
       >
-        <div className="p-6">
+        <div className="p-6 w-72">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
               <HiFilter className="text-[#e93b92]" />
@@ -62,7 +82,7 @@ export default function Sidebar({
             </h2>
             <button
               onClick={toggleSidebar}
-              className="lg:hidden p-2 text-gray-500 hover:text-[#e93b92] rounded-full hover:bg-pink-50 transition-colors"
+              className="md:hidden p-2 text-gray-500 hover:text-[#e93b92] rounded-full hover:bg-pink-50 transition-colors"
             >
               <HiX size={24} />
             </button>
