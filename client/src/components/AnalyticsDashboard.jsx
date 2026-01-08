@@ -22,11 +22,15 @@ import {
   LineChart,
   Line,
 } from "recharts";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 export default function AnalyticsDashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState("7days"); // '7days', '30days', '3months'
+  const [selectedDate, setSelectedDate] = useState("");
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -57,6 +61,84 @@ export default function AnalyticsDashboard() {
   }, [timeRange]);
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
+
+  const handleDateFilter = () => {
+    if (!selectedDate) {
+      alert("Please select a date");
+      return;
+    }
+
+    const filtered = stats.recentTransactions.filter((transaction) => {
+      const transactionDate = new Date(transaction.timestamp)
+        .toISOString()
+        .split("T")[0];
+      return transactionDate === selectedDate;
+    });
+
+    setFilteredTransactions(filtered);
+
+    if (filtered.length === 0) {
+      alert("No transactions found for this date");
+    }
+  };
+
+  const handleResetFilter = () => {
+    setSelectedDate("");
+    setFilteredTransactions([]);
+  };
+
+  const handleDownloadPDF = () => {
+    const transactionsToDownload =
+      filteredTransactions.length > 0
+        ? filteredTransactions
+        : stats.recentTransactions;
+
+    if (transactionsToDownload.length === 0) {
+      alert("No transactions to download");
+      return;
+    }
+
+    const doc = new jsPDF();
+
+    // Add title
+    doc.setFontSize(16);
+    doc.text("Stock Transactions Report", 14, 15);
+
+    // Add date info
+    doc.setFontSize(10);
+    if (selectedDate) {
+      doc.text(`Date: ${selectedDate}`, 14, 25);
+    } else {
+      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 25);
+    }
+
+    // Prepare table data
+    const tableData = transactionsToDownload.map((t) => [
+      new Date(t.timestamp).toLocaleString(),
+      t.foodId?.foodName || "Deleted Item",
+      t.transactionType,
+      t.quantity,
+      t.performedBy || "Unknown",
+      t.reason || "No reason",
+    ]);
+
+    // Generate table
+    doc.autoTable({
+      head: [
+        ["Date", "Food Item", "Type", "Quantity", "Performed By", "Reason"],
+      ],
+      body: tableData,
+      startY: 30,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [41, 128, 185] },
+    });
+
+    // Save PDF
+    const fileName = selectedDate
+      ? `transactions_${selectedDate}.pdf`
+      : `transactions_${new Date().toISOString().split("T")[0]}.pdf`;
+    doc.save(fileName);
+  };
 
   if (loading) {
     return <div className="text-center py-10">Loading analytics...</div>;
@@ -227,9 +309,55 @@ export default function AnalyticsDashboard() {
 
       {/* Recent Transactions Table */}
       <div className="bg-white p-4 rounded-lg shadow-md dark:bg-gray-800">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-          Recent Transactions
-        </h3>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Recent Transactions
+          </h3>
+
+          <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+            {/* Date Picker */}
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            />
+
+            {/* Filter Button */}
+            <button
+              onClick={handleDateFilter}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 focus:ring-4 focus:ring-blue-300"
+            >
+              Filter
+            </button>
+
+            {/* Reset Button */}
+            {filteredTransactions.length > 0 && (
+              <button
+                onClick={handleResetFilter}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm font-medium hover:bg-gray-700 focus:ring-4 focus:ring-gray-300"
+              >
+                Reset
+              </button>
+            )}
+
+            {/* Download Button */}
+            <button
+              onClick={handleDownloadPDF}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 focus:ring-4 focus:ring-green-300"
+            >
+              Download PDF
+            </button>
+          </div>
+        </div>
+
+        {/* Show filtered count */}
+        {filteredTransactions.length > 0 && (
+          <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900 rounded text-sm text-blue-800 dark:text-blue-200">
+            Showing {filteredTransactions.length} transaction(s) for{" "}
+            {selectedDate}
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -255,7 +383,10 @@ export default function AnalyticsDashboard() {
               </tr>
             </thead>
             <tbody>
-              {stats.recentTransactions.map((t) => (
+              {(filteredTransactions.length > 0
+                ? filteredTransactions
+                : stats.recentTransactions
+              ).map((t) => (
                 <tr
                   key={t._id}
                   className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
