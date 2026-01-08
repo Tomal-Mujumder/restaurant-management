@@ -249,6 +249,9 @@ export default function AnalyticsDashboard() {
                 <th scope="col" className="px-6 py-3">
                   Performed By
                 </th>
+                <th scope="col" className="px-6 py-3">
+                  Reason
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -278,6 +281,9 @@ export default function AnalyticsDashboard() {
                   </td>
                   <td className="px-6 py-4">{t.quantity}</td>
                   <td className="px-6 py-4">{t.performedBy || "Unknown"}</td>
+                  <td className="px-6 py-4 text-gray-600 dark:text-gray-400">
+                    {t.reason || "No reason provided"}
+                  </td>
                 </tr>
               ))}
             </tbody>
