@@ -8,13 +8,24 @@ const supplierSchema = new mongoose.Schema(
     },
     email: {
       type: String,
+      required: true,
       unique: true,
+    },
+    contactPerson: {
+      type: String,
+      required: true,
     },
     phone: {
       type: String,
+      required: true,
     },
     address: {
       type: String,
+      required: true,
+    },
+    rating: {
+      type: Number,
+      default: 3,
     },
     itemsSupplied: [
       {

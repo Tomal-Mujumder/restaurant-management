@@ -28,6 +28,7 @@ export default function SupplierManagement() {
   const [orders, setOrders] = useState([]);
   const [foodItems, setFoodItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Supplier Form States
   const [showSupplierModal, setShowSupplierModal] = useState(false);
@@ -310,9 +311,18 @@ export default function SupplierManagement() {
           <Tabs.Item active={activeTab === 0} title="Suppliers">
             <div className="flex justify-between items-center mb-4 mt-4">
               <h2 className="text-xl font-semibold">Our Suppliers</h2>
-              <Button color="blue" onClick={openAddSupplier}>
-                <HiPlus className="mr-2 h-5 w-5" /> Add Supplier
-              </Button>
+              <div className="flex gap-4">
+                <TextInput
+                  type="text"
+                  placeholder="Search suppliers..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-64"
+                />
+                <Button color="blue" onClick={openAddSupplier}>
+                  <HiPlus className="mr-2 h-5 w-5" /> Add Supplier
+                </Button>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -321,44 +331,65 @@ export default function SupplierManagement() {
                   <Table.HeadCell>Name</Table.HeadCell>
                   <Table.HeadCell>Contact Person</Table.HeadCell>
                   <Table.HeadCell>Contact Info</Table.HeadCell>
+                  <Table.HeadCell>Items Supplied</Table.HeadCell>
                   <Table.HeadCell>Rating</Table.HeadCell>
                   <Table.HeadCell>Actions</Table.HeadCell>
                 </Table.Head>
                 <Table.Body className="divide-y">
-                  {suppliers.map((s) => (
-                    <Table.Row key={s._id} className="bg-white">
-                      <Table.Cell className="font-medium text-gray-900">
-                        {s.name}
-                      </Table.Cell>
-                      <Table.Cell>{s.contactPerson}</Table.Cell>
-                      <Table.Cell>
-                        <div className="text-sm">{s.email}</div>
-                        <div className="text-xs text-gray-500">{s.phone}</div>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <div className="flex">{renderStars(s.rating)}</div>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => openEditSupplier(s)}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            <HiPencilAlt className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSupplierToDelete(s);
-                              setShowDeleteModal(true);
-                            }}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            <HiTrash className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
+                  {suppliers
+                    .filter(
+                      (s) =>
+                        s.name
+                          .toLowerCase()
+                          .includes(searchTerm.toLowerCase()) ||
+                        s.contactPerson
+                          .toLowerCase()
+                          .includes(searchTerm.toLowerCase()) ||
+                        s.email.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map((s) => (
+                      <Table.Row key={s._id} className="bg-white">
+                        <Table.Cell className="font-medium text-gray-900">
+                          {s.name}
+                        </Table.Cell>
+                        <Table.Cell>{s.contactPerson}</Table.Cell>
+                        <Table.Cell>
+                          <div className="text-sm">{s.email}</div>
+                          <div className="text-xs text-gray-500">{s.phone}</div>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <div className="flex flex-wrap gap-1">
+                            {s.itemsSupplied?.map((item) => (
+                              <Badge key={item._id} color="indigo" size="xs">
+                                {item.foodName}
+                              </Badge>
+                            )) || <span className="text-gray-400">None</span>}
+                          </div>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <div className="flex">{renderStars(s.rating)}</div>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => openEditSupplier(s)}
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              <HiPencilAlt className="h-5 w-5" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSupplierToDelete(s);
+                                setShowDeleteModal(true);
+                              }}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <HiTrash className="h-5 w-5" />
+                            </button>
+                          </div>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
                 </Table.Body>
               </Table>
             </div>
@@ -520,30 +551,57 @@ export default function SupplierManagement() {
             </div>
             <div>
               <Label value="Items Supplied" />
-              <select
-                multiple
-                className="w-full rounded-lg border-gray-300 bg-gray-50 p-2.5 text-sm"
-                value={supplierFormData.itemsSupplied}
-                onChange={(e) => {
-                  const options = Array.from(
-                    e.target.selectedOptions,
-                    (option) => option.value
+              <div className="flex flex-wrap gap-2 mb-2">
+                {supplierFormData.itemsSupplied.map((itemId) => {
+                  const item = foodItems.find((fi) => fi._id === itemId);
+                  return (
+                    <Badge
+                      key={itemId}
+                      color="info"
+                      size="sm"
+                      className="cursor-pointer"
+                      onClick={() => {
+                        setSupplierFormData({
+                          ...supplierFormData,
+                          itemsSupplied: supplierFormData.itemsSupplied.filter(
+                            (id) => id !== itemId
+                          ),
+                        });
+                      }}
+                    >
+                      {item ? item.foodName : "Unknown"} ✖
+                    </Badge>
                   );
-                  setSupplierFormData({
-                    ...supplierFormData,
-                    itemsSupplied: options,
-                  });
+                })}
+              </div>
+              <Select
+                onChange={(e) => {
+                  if (
+                    e.target.value &&
+                    !supplierFormData.itemsSupplied.includes(e.target.value)
+                  ) {
+                    setSupplierFormData({
+                      ...supplierFormData,
+                      itemsSupplied: [
+                        ...supplierFormData.itemsSupplied,
+                        e.target.value,
+                      ],
+                    });
+                  }
+                  e.target.value = ""; // Reset select
                 }}
               >
-                {foodItems.map((item) => (
-                  <option key={item._id} value={item._id}>
-                    {item.foodName}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-gray-500 mt-1">
-                Hold Ctrl/Cmd to select multiple
-              </p>
+                <option value="">Add item to supplier...</option>
+                {foodItems
+                  .filter(
+                    (item) => !supplierFormData.itemsSupplied.includes(item._id)
+                  )
+                  .map((item) => (
+                    <option key={item._id} value={item._id}>
+                      {item.foodName}
+                    </option>
+                  ))}
+              </Select>
             </div>
             <div>
               <Label value="Rating" />
