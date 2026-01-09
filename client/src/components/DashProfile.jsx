@@ -1,7 +1,7 @@
 import { TextInput, Alert, Modal } from "flowbite-react";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import axios from 'axios';
+import axios from "axios";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import {
@@ -53,29 +53,30 @@ export default function DashProfile() {
     setImageFileUploadProgress(0);
 
     const data = new FormData();
-    data.append('image', imageFile);
+    data.append("images", imageFile);
 
     try {
-        const res = await axios.post('/api/upload/image', data, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-            onUploadProgress: (progressEvent) => {
-                const progress = (progressEvent.loaded / progressEvent.total) * 100;
-                setImageFileUploadProgress(progress.toFixed(0));
-            },
-        });
+      const res = await axios.post("/api/upload/uploadImages", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+        onUploadProgress: (progressEvent) => {
+          const progress = (progressEvent.loaded / progressEvent.total) * 100;
+          setImageFileUploadProgress(progress.toFixed(0));
+        },
+      });
 
-        setImageFileUrl(res.data.secure_url);
-        setFormData({ ...formData, profilePicture: res.data.secure_url, profilePicturePublicId: res.data.public_id });
-        setImageFileUploading(false);
+      setImageFileUrl(res.data.urls[0]);
+      setFormData({ ...formData, profilePicture: res.data.urls[0] });
+      setImageFileUploading(false);
     } catch (error) {
-        setImageFileUploadError("Could not upload image");
-        setImageFileUploadProgress(null);
-        setImageFile(null);
-        setImageFileUrl(null);
-        setImageFileUploading(false);
-        console.error(error);
+      setImageFileUploadError("Could not upload image");
+      setImageFileUploadProgress(null);
+      setImageFile(null);
+      setImageFileUrl(null);
+      setImageFileUploading(false);
+      console.error(error);
     }
   };
 
@@ -99,21 +100,23 @@ export default function DashProfile() {
 
     // Validation checks
     if (formData.username !== undefined) {
-        if (formData.username.trim() === "") {
-             setUpdateUserError("Username cannot be empty");
-             return;
-        }
-        if (!/^[a-zA-Z0-9_ ]+$/.test(formData.username)) {
-            setUpdateUserError("Username must contain only letters, numbers, spaces, and underscores");
-            return;
-        }
+      if (formData.username.trim() === "") {
+        setUpdateUserError("Username cannot be empty");
+        return;
+      }
+      if (!/^[a-zA-Z0-9_ ]+$/.test(formData.username)) {
+        setUpdateUserError(
+          "Username must contain only letters, numbers, spaces, and underscores"
+        );
+        return;
+      }
     }
 
     if (formData.phone !== undefined) {
-         if (!/^\d{11}$/.test(formData.phone)) {
-             setUpdateUserError("Phone number must be exactly 11 digits");
-             return;
-         }
+      if (!/^\d{11}$/.test(formData.phone)) {
+        setUpdateUserError("Phone number must be exactly 11 digits");
+        return;
+      }
     }
 
     try {
@@ -188,7 +191,9 @@ export default function DashProfile() {
             />
           )}
           <img
-            src={imageFileUrl || currentUser.profilePicture || "default-avatar-url"}
+            src={
+              imageFileUrl || currentUser.profilePicture || "default-avatar-url"
+            }
             alt="user"
             className={`rounded-full w-full h-full object-cover shadow-lg border-8 border-[#1f1f1f] ${
               imageFileUploadProgress &&
@@ -202,7 +207,10 @@ export default function DashProfile() {
         )}
         {fields.map(({ id, label, type }) => (
           <div key={id}>
-            <label htmlFor={id} className="text-[#1f1f1f] text-sm font-semibold">
+            <label
+              htmlFor={id}
+              className="text-[#1f1f1f] text-sm font-semibold"
+            >
               {label}
             </label>
             <TextInput

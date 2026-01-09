@@ -58,24 +58,24 @@ export default function DashProfile() {
     setImageFileUploadProgress(0);
 
     const data = new FormData();
-    data.append("image", imageFile);
+    data.append("images", imageFile);
 
     try {
-      const res = await axios.post("/api/upload/image", data, {
+      const res = await axios.post("/api/upload/uploadImages", data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        withCredentials: true,
         onUploadProgress: (progressEvent) => {
           const progress = (progressEvent.loaded / progressEvent.total) * 100;
           setImageFileUploadProgress(progress.toFixed(0));
         },
       });
 
-      setImageFileUrl(res.data.secure_url);
+      setImageFileUrl(res.data.urls[0]);
       setFormData({
         ...formData,
-        profilePicture: res.data.secure_url,
-        profilePicturePublicId: res.data.public_id,
+        profilePicture: res.data.urls[0],
       });
       setImageFileUploading(false);
     } catch (error) {

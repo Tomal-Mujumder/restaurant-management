@@ -83,6 +83,7 @@ export default function FoodCategoryForm() {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        withCredentials: true,
         onUploadProgress: (progressEvent) => {
           const progress = (progressEvent.loaded / progressEvent.total) * 100;
           setUploadProgress(progress.toFixed(0));
