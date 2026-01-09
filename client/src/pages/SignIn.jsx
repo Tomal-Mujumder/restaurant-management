@@ -58,6 +58,7 @@ export default function SignIn() {
 
       if (res.ok) {
         dispatch(signInSuccess(data));
+        localStorage.setItem("token", data.token);
         localStorage.setItem("userId", data._id);
         navigate("/");
       }

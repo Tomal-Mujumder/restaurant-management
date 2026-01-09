@@ -400,3 +400,25 @@ export const getPaymentDetailsByToken = async (req, res, next) => {
     next(errorHandler(500, "Failed to retrieve order details."));
   }
 };
+
+// Get payments by user ID
+export const getPaymentsByUserId = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    // Verify the requesting user is the same as the userId or is admin
+    // Note: req.user comes from verifyToken middleware
+    if (req.user.id !== userId && !req.user.isAdmin) {
+      return next(errorHandler(403, "Access denied"));
+    }
+
+    const payments = await Payment.find({ userId })
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .populate("userId", "username email name");
+
+    res.status(200).json(payments);
+  } catch (error) {
+    console.error("Error fetching user payments:", error);
+    next(errorHandler(500, "Failed to retrieve user payments"));
+  }
+};

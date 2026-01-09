@@ -1,91 +1,112 @@
-import { useState, useEffect } from 'react';
-import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { signoutSuccess } from '../redux/user/userSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { HiArrowSmRight, HiOutlineUserGroup, HiUser } from 'react-icons/hi';
-import { Sidebar } from 'flowbite-react';
+import { useState, useEffect } from "react";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import { signoutSuccess } from "../redux/user/userSlice";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  HiArrowSmRight,
+  HiOutlineUserGroup,
+  HiUser,
+  HiShoppingBag,
+} from "react-icons/hi";
+import { Sidebar } from "flowbite-react";
 
 export default function DashSideBar() {
   const location = useLocation();
-    const navigate = useNavigate();
-  
+  const navigate = useNavigate();
+
   const dispatch = useDispatch();
-  const [tab, setTab] = useState('');
-  const { currentUser } = useSelector(state => state.user);
+  const [tab, setTab] = useState("");
+  const { currentUser } = useSelector((state) => state.user);
 
   useEffect(() => {
     const urlparams = new URLSearchParams(location.search);
-    const tabFromUrl = urlparams.get('tab');
+    const tabFromUrl = urlparams.get("tab");
     if (tabFromUrl) {
       setTab(tabFromUrl);
     }
   }, [location.search]);
 
   const handleSignout = async () => {
-      try {
-          // Get userId before clearing
-          const userId = localStorage.getItem('userId');
-  
-          const res = await fetch('/api/user/signout', {
-              method: 'POST',
-          });
-          const data = await res.json();
-          
-          if (!res.ok) {
-              console.log(data.message);
-          } else {
-             
-               // Dispatch signout action and navigate
-              dispatch(signoutSuccess());
-              navigate(`/`);
-          }
-      } catch (error) {
-          console.log(error.message);
+    try {
+      // Get userId before clearing
+      const userId = localStorage.getItem("userId");
+
+      const res = await fetch("/api/user/signout", {
+        method: "POST",
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.log(data.message);
+      } else {
+        // Dispatch signout action and navigate
+        dispatch(signoutSuccess());
+        navigate(`/`);
       }
+    } catch (error) {
+      console.log(error.message);
+    }
   };
 
   const sidebarStyle = {
-    backgroundColor: '#000000',
-    color: '#ffffff',
+    backgroundColor: "#000000",
+    color: "#ffffff",
   };
 
   const itemStyle = {
-    backgroundColor: '#000000',
-    color: '#ffffff',
-    '&:hover': {
-      backgroundColor: '#333333',
+    backgroundColor: "#000000",
+    color: "#ffffff",
+    "&:hover": {
+      backgroundColor: "#333333",
     },
   };
 
   return (
     <div className="w-full h-full md:w-56 drop-shadow-2xl border-b-white">
       <div className="flex flex-col h-full overflow-x-hidden overflow-y-auto text-center">
-        <Sidebar className='w-full text-gray-200' style={sidebarStyle}>
+        <Sidebar className="w-full text-gray-200" style={sidebarStyle}>
           <Sidebar.Items>
-            <Sidebar.ItemGroup className='flex flex-col gap-1'>
-
-
-              <Link to='/dashboard?tab=profile'>
+            <Sidebar.ItemGroup className="flex flex-col gap-1">
+              <Link to="/dashboard?tab=profile">
                 <Sidebar.Item
-                  active={tab === 'profile'}
+                  active={tab === "profile"}
                   icon={HiUser}
-                  label={currentUser?.isAdmin ? 'Admin' : 'User'}
-                  labelColor='dark'
-                  as='div'
-                  className={`hover:bg-gray-700 ${tab === 'profile' ? 'bg-gray-800' : ''}`}
+                  label={currentUser?.isAdmin ? "Admin" : "User"}
+                  labelColor="dark"
+                  as="div"
+                  className={`hover:bg-gray-700 ${
+                    tab === "profile" ? "bg-gray-800" : ""
+                  }`}
                   style={itemStyle}
                 >
                   Profile
                 </Sidebar.Item>
               </Link>
 
+              {/* Orders Link */}
+              <Link to="/dashboard?tab=orders">
+                <Sidebar.Item
+                  active={tab === "orders"}
+                  icon={HiShoppingBag}
+                  as="div"
+                  className={`hover:bg-gray-700 ${
+                    tab === "orders" ? "bg-gray-800" : ""
+                  }`}
+                  style={itemStyle}
+                >
+                  My Orders
+                </Sidebar.Item>
+              </Link>
+
               {currentUser?.isAdmin && (
-                <Link to='/dashboard?tab=users'>
+                <Link to="/dashboard?tab=users">
                   <Sidebar.Item
-                    active={tab === 'users'}
+                    active={tab === "users"}
                     icon={HiOutlineUserGroup}
-                    as='div'
-                    className={`hover:bg-gray-700 ${tab === 'users' ? 'bg-gray-800' : ''}`}
+                    as="div"
+                    className={`hover:bg-gray-700 ${
+                      tab === "users" ? "bg-gray-800" : ""
+                    }`}
                     style={itemStyle}
                   >
                     Users
@@ -95,14 +116,12 @@ export default function DashSideBar() {
 
               <Sidebar.Item
                 icon={HiArrowSmRight}
-                className='cursor-pointer hover:bg-gray-700'
+                className="cursor-pointer hover:bg-gray-700"
                 onClick={handleSignout}
                 style={itemStyle}
               >
                 Sign Out
               </Sidebar.Item>
-
-
             </Sidebar.ItemGroup>
           </Sidebar.Items>
         </Sidebar>
