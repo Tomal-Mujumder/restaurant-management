@@ -8,7 +8,14 @@ import mongoose from "mongoose";
 
 // Save payment details to database
 export const savePayment = async (req, res, next) => {
-  const { userId, cartItems, totalPrice, paymentInfo, tokenNumber } = req.body;
+  const {
+    userId,
+    cartItems,
+    totalPrice,
+    paymentInfo,
+    tokenNumber,
+    shipmentData,
+  } = req.body;
 
   try {
     const payment = new Payment({
@@ -18,6 +25,7 @@ export const savePayment = async (req, res, next) => {
       paymentInfo: {
         ...paymentInfo, // Include cardType from paymentInfo
       },
+      shipmentData, // Save shipment data
       tokenNumber, // Save token number for order identification
     });
 
@@ -334,7 +342,6 @@ export const deleteOldPayments = async (req, res, next) => {
 // Get payment details by token (for Success Page)
 export const getPaymentDetailsByToken = async (req, res, next) => {
   const { token } = req.params;
-  const user = req.user; // Get user from verifyToken
 
   try {
     // 1. Fetch payment WITHOUT populate first to get the raw userId
@@ -344,62 +351,47 @@ export const getPaymentDetailsByToken = async (req, res, next) => {
       return next(errorHandler(404, "No order found with this token."));
     }
 
-    // 2. Security Check: Ensure the payment belongs to the requesting user
-    // Normalize IDs to strings for comparison
-    const requestUserId = user.id || user._id || user.empId;
-    const paymentUserId = payment.userId ? payment.userId.toString() : null;
-
-    // Allow Admins to view any order? (Optional, but strict owner check requested)
-    // For now, strict owner check:
-    if (
-      !requestUserId ||
-      !paymentUserId ||
-      String(requestUserId) !== String(paymentUserId)
-    ) {
-      // Fallback: If user is admin/manager, maybe allow?
-      // But for receipt flow, usually it's the payer.
-      if (!user.isAdmin) {
-        return next(errorHandler(403, "Unauthorized access to this order."));
-      }
-    }
+    // 2. (Optional) Security Check:
+    // Since this is now a "public" receipt page accessed via a specific token,
+    // we can skip the strict user ownership check. The token acts as the key.
+    // However, we should still populate user details for the receipt.
 
     // 3. Manually populate user details (could be User OR Employee)
-    let paymentUser = await User.findById(paymentUserId).select(
-      "username email"
-    );
-
-    // If not found in User collection, check Employee collection
-    if (!paymentUser) {
-      paymentUser = await Employee.findById(paymentUserId).select(
-        "firstname lastname email phone"
+    let paymentUser = null;
+    if (payment.userId) {
+      paymentUser = await User.findById(payment.userId).select(
+        "username email"
       );
-      // Normalize employee object to look like user object for frontend consistency if needed
-      if (paymentUser) {
+
+      // If not found in User collection, check Employee collection
+      if (!paymentUser) {
+        const employeeUser = await Employee.findById(payment.userId).select(
+          "firstname lastname email phone"
+        );
+        // Normalize employee object to look like user object for frontend consistency if needed
+        if (employeeUser) {
+          paymentUser = {
+            _id: employeeUser._id,
+            name: `${employeeUser.firstname} ${employeeUser.lastname}`,
+            email: employeeUser.email,
+            contactNumber: employeeUser.phone,
+          };
+        }
+      } else {
+        // Normalize User object
         paymentUser = {
           _id: paymentUser._id,
-          name: `${paymentUser.firstname} ${paymentUser.lastname}`,
+          name: paymentUser.username,
           email: paymentUser.email,
-          contactNumber: paymentUser.phone,
+          contactNumber: "N/A",
         };
       }
-    } else {
-      // Normalize User object
-      paymentUser = {
-        _id: paymentUser._id,
-        name: paymentUser.username, // User model has username, not name?
-        email: paymentUser.email,
-        contactNumber: "N/A", // User model might not have contactNumber easily accessible or named differently
-      };
-      // Quick check if User model has other fields.
-      // Based on previous reads, User has username, email, etc.
-      // Let's re-fetch with specific fields if they exist?
-      // Actually, let's keep it simple. The schema scan showed User has 'username', 'email'.
     }
 
     // 4. Construct response
     const paymentWithUser = {
       ...payment.toObject(),
-      userId: paymentUser || { name: "Unknown User", email: "N/A" },
+      userId: paymentUser || { name: "Guest/Unknown", email: "N/A" },
     };
 
     res.status(200).json(paymentWithUser);

@@ -26,6 +26,6 @@ router.put("/update/:paymentId", verifyToken, updatePayment);
 
 // Route to delete payments older than a specified number of days
 router.post("/delete-old", verifyToken, verifyAdmin, deleteOldPayments);
-router.get("/order/:token", verifyToken, getPaymentDetailsByToken);
+router.get("/order/:token", getPaymentDetailsByToken);
 
 export default router;

@@ -6,7 +6,7 @@ import { deductStockFromCart } from "../utils/stockHelper.js";
 // Initialize Payment
 export const initPayment = async (req, res, next) => {
   try {
-    const { userId, cartItems, totalPrice } = req.body;
+    const { userId, cartItems, totalPrice, shipmentData } = req.body;
 
     // Optional: Clean up old pending sessions
     deleteOldPendingPayments();
@@ -36,6 +36,7 @@ export const initPayment = async (req, res, next) => {
         expirationDate: new Date().toISOString(),
         securityCode: "Pending",
       },
+      shipmentData, // Save shipment data
       tokenNumber,
       isChecked: false,
     });
@@ -50,22 +51,22 @@ export const initPayment = async (req, res, next) => {
       fail_url: sslcommerzConfig.fail_url,
       cancel_url: sslcommerzConfig.cancel_url,
       ipn_url: sslcommerzConfig.ipn_url,
-      shipping_method: "Courier",
+      shipping_method: shipmentData?.deliveryType || "Courier",
       product_name: "Food Items",
       product_category: "Food",
       product_profile: "general",
-      cus_name: "Customer Name", // Should be fetched from user profile if available
+      cus_name: shipmentData?.fullName || "Customer Name", // Should be fetched from user profile if available
       cus_email: "customer@example.com",
-      cus_add1: "Dhaka",
+      cus_add1: shipmentData?.shippingAddress || "Dhaka",
       cus_add2: "Dhaka",
       cus_city: "Dhaka",
       cus_state: "Dhaka",
       cus_postcode: "1000",
       cus_country: "Bangladesh",
-      cus_phone: "01711111111",
-      cus_fax: "01711111111",
-      ship_name: "Customer Name",
-      ship_add1: "Dhaka",
+      cus_phone: shipmentData?.mobileNumber || "01711111111",
+      cus_fax: shipmentData?.mobileNumber || "01711111111",
+      ship_name: shipmentData?.fullName || "Customer Name",
+      ship_add1: shipmentData?.shippingAddress || "Dhaka",
       ship_add2: "Dhaka",
       ship_city: "Dhaka",
       ship_state: "Dhaka",

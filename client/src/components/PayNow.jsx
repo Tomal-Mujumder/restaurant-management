@@ -9,7 +9,11 @@ const PayNow = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { cartItems = [], totalPrice = 0 } = location.state || {};
+  const {
+    cartItems = [],
+    totalPrice = 0,
+    shipmentData = {},
+  } = location.state || {};
   const currentUser = useSelector((state) => state.user.currentUser); // Get currentUser from Redux store
 
   useEffect(() => {
@@ -46,6 +50,7 @@ const PayNow = () => {
       userId,
       cartItems,
       totalPrice,
+      shipmentData, // Include shipment data
       paymentInfo: {
         cardType: e.target.cardType.value,
         cardName: e.target.cardName.value,
@@ -84,9 +89,9 @@ const PayNow = () => {
           window.dispatchEvent(new Event("cartUpdated"));
         }
 
-        // Redirect to PaymentReceipt page with payment details
-        navigate("/payment-receipt", {
-          state: { paymentDetails: result.payment, tokenNumber },
+        // Redirect to PaymentSuccess page with payment details
+        navigate(`/payment-success?tranId=${result.payment.tokenNumber}`, {
+          state: { order: result.payment }, // Pass order object for fallback
         });
       } else {
         console.error("Payment failed");
