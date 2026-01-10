@@ -25,6 +25,9 @@ import analyticsRoutes from "./routes/analytics.routes.js";
 
 // import shippingRoutes from "./routes/shipping.routes.js";
 
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 dotenv.config();
 
 mongoose
