@@ -65,7 +65,9 @@ export default function StockManagement() {
   useEffect(() => {
     if (searchQuery) {
       const filtered = stocks.filter((stock) =>
-        stock.foodId.foodName.toLowerCase().includes(searchQuery.toLowerCase())
+        stock.foodId?.foodName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase())
       );
       setFilteredStocks(filtered);
     } else {
@@ -126,7 +128,7 @@ export default function StockManagement() {
 
     try {
       const response = await fetch(
-        `/api/stock/update/${selectedStock.foodId._id}`,
+        `/api/stock/update/${selectedStock?.foodId?._id}`,
         {
           method: "PUT",
           headers: {
@@ -168,7 +170,7 @@ export default function StockManagement() {
 
     try {
       const response = await fetch(
-        `/api/stock/threshold/${selectedStock.foodId._id}`,
+        `/api/stock/threshold/${selectedStock?.foodId?._id}`,
         {
           method: "PUT",
           headers: {
@@ -224,8 +226,9 @@ export default function StockManagement() {
   };
 
   const getImageSrc = (item) => {
+    if (!item) return "";
     if (item.images && item.images.length > 0) return item.images[0];
-    return item.image; // Fallback
+    return item.image || ""; // Fallback
   };
 
   return (
@@ -291,11 +294,11 @@ export default function StockManagement() {
                   <img
                     src={getImageSrc(stock.foodId)}
                     className="w-12 h-12 object-cover rounded"
-                    alt={stock.foodId.foodName}
+                    alt={stock.foodId?.foodName || "Food Item"}
                   />
                 </td>
                 <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                  {stock.foodId.foodName}
+                  {stock.foodId?.foodName || "Unknown Item"}
                 </td>
                 <td className="px-6 py-4 font-bold text-gray-900 dark:text-white">
                   {stock.quantity} {stock.unit}
@@ -334,14 +337,18 @@ export default function StockManagement() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
           <div className="bg-white rounded-lg shadow-lg w-96 p-6 dark:bg-gray-800">
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-              Adjust Stock: {selectedStock?.foodId.foodName}
+              Adjust Stock: {selectedStock?.foodId?.foodName || "Item"}
             </h3>
             <form onSubmit={handleAdjustSubmit}>
               <div className="mb-4">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label
+                  htmlFor="adjust-type"
+                  className="block mb-2 text-sm font-bold text-gray-900 dark:text-white"
+                >
                   Action
                 </label>
                 <select
+                  id="adjust-type"
                   className="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                   value={adjustFormData.type}
                   onChange={(e) =>
@@ -356,10 +363,14 @@ export default function StockManagement() {
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label
+                  htmlFor="adjust-quantity"
+                  className="block mb-2 text-sm font-bold text-gray-900 dark:text-white"
+                >
                   Quantity
                 </label>
                 <input
+                  id="adjust-quantity"
                   type="number"
                   min="0"
                   required
@@ -374,10 +385,14 @@ export default function StockManagement() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label
+                  htmlFor="adjust-reason"
+                  className="block mb-2 text-sm font-bold text-gray-900 dark:text-white"
+                >
                   Reason
                 </label>
                 <textarea
+                  id="adjust-reason"
                   className="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg"
                   rows="3"
                   placeholder="e.g. Broken items, New shipment..."
@@ -415,14 +430,18 @@ export default function StockManagement() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
           <div className="bg-white rounded-lg shadow-lg w-96 p-6 dark:bg-gray-800">
             <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-              Set Thresholds: {selectedStock?.foodId.foodName}
+              Set Thresholds: {selectedStock?.foodId?.foodName || "Item"}
             </h3>
             <form onSubmit={handleThresholdSubmit}>
               <div className="mb-4">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label
+                  htmlFor="min-threshold"
+                  className="block mb-2 text-sm font-bold text-gray-900 dark:text-white"
+                >
                   Min Threshold (Low Stock Alert)
                 </label>
                 <input
+                  id="min-threshold"
                   type="number"
                   min="0"
                   required
@@ -437,10 +456,14 @@ export default function StockManagement() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                <label
+                  htmlFor="max-threshold"
+                  className="block mb-2 text-sm font-bold text-gray-900 dark:text-white"
+                >
                   Max Threshold (Target Stock)
                 </label>
                 <input
+                  id="max-threshold"
                   type="number"
                   min="0"
                   required
