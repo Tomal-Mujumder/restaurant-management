@@ -249,6 +249,10 @@ export default function DashProfile() {
         {imageFileUploadError && (
           <Alert color="failure">{imageFileUploadError}</Alert>
         )}
+        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">
+          {" "}
+          Username{" "}
+        </h4>
         <TextInput
           type="text"
           id="username"
@@ -257,6 +261,9 @@ export default function DashProfile() {
           onChange={handleChange}
           className="text-black"
         />
+        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">
+          Email Address
+        </h4>
         <TextInput
           type="email"
           id="email"
@@ -265,6 +272,10 @@ export default function DashProfile() {
           onChange={handleChange}
           className="text-black"
         />
+        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">
+          {" "}
+          Password{" "}
+        </h4>
         <div className="relative">
           <TextInput
             type={showPassword ? "text" : "password"}
@@ -281,7 +292,10 @@ export default function DashProfile() {
             {showPassword ? <HiEyeOff size={20} /> : <HiEye size={20} />}
           </button>
         </div>
-        <h4 className="text-black"> Personal Information </h4>
+        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">
+          {" "}
+          Name{" "}
+        </h4>
         <TextInput
           type="text"
           id="name"
@@ -290,6 +304,10 @@ export default function DashProfile() {
           onChange={handleChange}
           className="text-black"
         />
+        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">
+          {" "}
+          Gender{" "}
+        </h4>
         <select
           id="gender"
           onChange={handleChange}
@@ -301,6 +319,10 @@ export default function DashProfile() {
           <option value="female">Female</option>
           <option value="other">Other</option>
         </select>
+        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">
+          {" "}
+          Date of Birth{" "}
+        </h4>
         <input
           type="date"
           id="dateOfBirth"
@@ -308,6 +330,10 @@ export default function DashProfile() {
           defaultValue={formattedDate}
           className="w-full p-2 mt-1 text-black border border-gray-300 rounded-md dark:text-gray-400"
         />
+        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">
+          {" "}
+          Address{" "}
+        </h4>
         <TextInput
           type="text"
           placeholder="Your Address"
@@ -316,6 +342,10 @@ export default function DashProfile() {
           onChange={handleChange}
           className="text-black"
         />
+        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-1">
+          {" "}
+          Contact Number{" "}
+        </h4>
         <TextInput
           type="text"
           placeholder="Your Contact Number"
