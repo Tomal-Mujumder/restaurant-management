@@ -27,6 +27,7 @@
     "mongodb": "^6.9.0",
     "mongoose": "^8.7.0",
     "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^7.0.12",
     "postcss": "^8.4.47",
     "postcss-cli": "^11.0.0",
