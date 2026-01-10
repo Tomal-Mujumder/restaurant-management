@@ -1,7 +1,7 @@
-import { v2 as cloudinary } from 'cloudinary';
-import dotenv from 'dotenv';
-import multer from 'multer';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import { v2 as cloudinary } from "cloudinary";
+import dotenv from "dotenv";
+import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 
 dotenv.config();
 
@@ -14,15 +14,25 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'banglar-heshel/food-items',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    public_id: (req, file) => file.originalname.split('.')[0] + '-' + Date.now(),
+    folder: (req, file) => {
+      // Dynamic folder selection based on fieldname
+      if (file.fieldname === "images") {
+        return "banglar-heshel/food-items";
+      } else if (file.fieldname === "profilePicture") {
+        return "banglar-heshel/profile-pictures";
+      } else {
+        return "banglar-heshel/others";
+      }
+    },
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    public_id: (req, file) =>
+      file.originalname.split(".")[0] + "-" + Date.now(),
   },
 });
 
-const upload = multer({ 
-    storage: storage,
-    limits: { fileSize: 2 * 1024 * 1024 } // 2MB limit
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
 });
 
 export { cloudinary, upload };

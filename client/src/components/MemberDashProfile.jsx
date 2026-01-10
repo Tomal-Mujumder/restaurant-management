@@ -58,7 +58,7 @@ export default function DashProfile() {
     setImageFileUploadProgress(0);
 
     const data = new FormData();
-    data.append("images", imageFile);
+    data.append("profilePicture", imageFile);
 
     try {
       const res = await axios.post("/api/upload/uploadImages", data, {
