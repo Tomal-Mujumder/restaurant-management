@@ -63,23 +63,37 @@ export default function AnalyticsDashboard() {
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 
-  const handleDateFilter = () => {
+  const handleDateFilter = async () => {
     if (!selectedDate) {
       alert("Please select a date");
       return;
     }
 
-    const filtered = stats.recentTransactions.filter((transaction) => {
-      const transactionDate = new Date(transaction.timestamp)
-        .toISOString()
-        .split("T")[0];
-      return transactionDate === selectedDate;
-    });
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `/api/analytics/download-by-date?date=${selectedDate}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
-    setFilteredTransactions(filtered);
-
-    if (filtered.length === 0) {
-      alert("No transactions found for this date");
+      const data = await response.json();
+      if (response.ok) {
+        setFilteredTransactions(data.transactions);
+        if (data.transactions.length === 0) {
+          alert("No transactions found for this date");
+        }
+      } else {
+        alert(data.message || "Failed to fetch transactions");
+      }
+    } catch (error) {
+      console.error("Error filtering transactions:", error);
+      alert("Error fetching transactions for date");
+    } finally {
+      setLoading(false);
     }
   };
 

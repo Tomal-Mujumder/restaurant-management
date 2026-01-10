@@ -40,7 +40,7 @@ const initializeStock = async () => {
         unit: "pieces",
         minThreshold: 10,
         maxThreshold: 100,
-        costPerUnit: food.price ? food.price * 0.6 : 0, // Estimated cost (60% of selling price)
+        costPerUnit: food.price, // Estimated cost (60% of selling price)
         lastRestocked: Date.now(),
       });
 
