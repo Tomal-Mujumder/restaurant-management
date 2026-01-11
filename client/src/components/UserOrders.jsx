@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Modal, Button } from "flowbite-react";
-import { HiEye, HiShoppingBag } from "react-icons/hi";
+import { HiEye, HiShoppingBag, HiPrinter } from "react-icons/hi";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 
@@ -353,9 +353,31 @@ export default function UserOrders() {
         onClose={() => setShowDetailsModal(false)}
       >
         <Modal.Header>Order Details</Modal.Header>
-        <Modal.Body className="dark:bg-gray-800 dark:text-white">
+        <Modal.Body
+          className="dark:bg-gray-800 dark:text-white"
+          id="order-details-print"
+        >
           {selectedOrder && (
             <div className="space-y-6">
+              {/* Print Header (Visible only when printing) */}
+              <div className="hidden print:block border-b-2 border-gray-200 pb-4 mb-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                      Order Invoice
+                    </h1>
+                    <p className="text-sm text-gray-500">
+                      Banglar Heshel Restaurant
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-600">
+                      Generated on: {new Date().toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Order Summary */}
               <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                 <div>
@@ -507,7 +529,19 @@ export default function UserOrders() {
           )}
         </Modal.Body>
         <Modal.Footer className="dark:bg-gray-800">
-          <Button color="gray" onClick={() => setShowDetailsModal(false)}>
+          <Button
+            color="blue"
+            onClick={() => window.print()}
+            className="print:hidden"
+          >
+            <HiPrinter className="mr-2 h-5 w-5" />
+            Print
+          </Button>
+          <Button
+            color="gray"
+            onClick={() => setShowDetailsModal(false)}
+            className="print:hidden"
+          >
             Close
           </Button>
         </Modal.Footer>
