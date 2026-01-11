@@ -18,7 +18,9 @@ export default function DashboardComponent() {
   useEffect(() => {
     const fetchManagers = async () => {
       try {
-        const res = await fetch(`/api/employee/getemployee?role=Manager&limit=5`);
+        const res = await fetch(
+          `/api/employee/getemployee?role=Manager&limit=5`
+        );
         const data = await res.json();
         if (res.ok) {
           setManagers(data.employees);
@@ -59,7 +61,9 @@ export default function DashboardComponent() {
         <div className="flex flex-col justify-between w-full gap-4 p-3 bg-white rounded-md shadow-md md:w-72">
           <div className="flex justify-between">
             <div>
-              <h3 className="text-[#1f1f1f] text-md uppercase">Total Managers</h3>
+              <h3 className="text-[#1f1f1f] text-md uppercase">
+                Total Managers
+              </h3>
               <p className="text-2xl font-semibold">{totalManagers}</p>
             </div>
             <FaUserTie className="p-3 text-5xl text-white rounded-full shadow-lg bg-blue-950" />
@@ -99,9 +103,18 @@ export default function DashboardComponent() {
                       <img
                         alt="Profile"
                         height="32"
-                        src={manager.profilePicture}
+                        src={
+                          manager.profilePicture &&
+                          manager.profilePicture.startsWith("http")
+                            ? manager.profilePicture
+                            : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                        }
                         width="32"
                         className="rounded-full"
+                        onError={(e) => {
+                          e.target.src =
+                            "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+                        }}
                       />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -143,9 +156,18 @@ export default function DashboardComponent() {
                       <img
                         alt="Profile"
                         height="32"
-                        src={user.profilePicture}
+                        src={
+                          user.profilePicture &&
+                          user.profilePicture.startsWith("http")
+                            ? user.profilePicture
+                            : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                        }
                         width="32"
                         className="rounded-full"
+                        onError={(e) => {
+                          e.target.src =
+                            "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+                        }}
                       />
                     </div>
                     <div className="flex-1 min-w-0">

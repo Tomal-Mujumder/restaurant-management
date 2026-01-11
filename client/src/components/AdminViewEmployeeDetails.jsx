@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import Header from "./Header";
 import AdminDashSideBar from "./AdminDashSideBar";
 import EmployeeContact from "./EmployeeContact";
 import jsPDF from "jspdf";
@@ -37,7 +36,6 @@ export default function AdminViewEmployeeDetails() {
     fetchEmployee();
   }, [empId]);
 
-
   const generatePDF = () => {
     const employeeDetails = document.getElementById("employeeDetails");
     const pdf = new jsPDF("p", "mm", "a4");
@@ -49,25 +47,40 @@ export default function AdminViewEmployeeDetails() {
       const imgWidth = 210; // A4 width
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-      
+
       // Download PDF
       pdf.save("employee_report.pdf");
     });
   };
   return (
     <>
-      <Header />
-      <div className="min-h-screen flex flex-col md:flex-row bg-[#d4d4d4]" id="employeeDetails">
+      <div
+        className="min-h-screen flex flex-col md:flex-row bg-[#d4d4d4]"
+        id="employeeDetails"
+      >
         <div className="md:w-56">
           <AdminDashSideBar />
         </div>
-        <div className="flex-grow w-full min-h-[60vh] bg-[#d4d4d4] p-10 md:p-20 justify-center" id="employeeDetails">
+        <div
+          className="flex-grow w-full min-h-[60vh] bg-[#d4d4d4] p-10 md:p-20 justify-center"
+          id="employeeDetails"
+        >
           <div className="max-w-[600px] mx-auto rounded-md p-10 bg-white shadow-lg">
             <div className="flex items-center justify-center">
               <img
-                src={employee && employee.profilePicture}
+                src={
+                  employee &&
+                  employee.profilePicture &&
+                  employee.profilePicture.startsWith("http")
+                    ? employee.profilePicture
+                    : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                }
                 alt={employee && employee.username}
                 className="object-cover object-center w-32 h-32 mt-10 border-4 rounded-full shadow-md"
+                onError={(e) => {
+                  e.target.src =
+                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+                }}
               />
             </div>
             <div className="flex flex-col p-2 mt-5">
@@ -102,7 +115,6 @@ export default function AdminViewEmployeeDetails() {
                 <p>Address:</p>
                 <p className="font-semibold">{employee && employee.address}</p>
               </div>
-              
             </div>
             <div className="flex flex-col items-center justify-center">
               <button onClick={generatePDF}>Report</button>

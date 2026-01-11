@@ -123,9 +123,18 @@ export default function AdminDasManagers() {
                     <td className="px-6 py-4">
                       <Link to={`/view-employee-details/${employee._id}`}>
                         <img
-                          src={employee.profilePicture}
+                          src={
+                            employee.profilePicture &&
+                            employee.profilePicture.startsWith("http")
+                              ? employee.profilePicture
+                              : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                          }
                           alt={employee.username}
                           className="object-cover w-10 h-10 bg-gray-500 rounded-full"
+                          onError={(e) => {
+                            e.target.src =
+                              "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+                          }}
                         />
                       </Link>
                     </td>

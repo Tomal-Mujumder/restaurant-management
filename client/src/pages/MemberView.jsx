@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import { Button, Label, TextInput } from 'flowbite-react';
-import { useSelector } from 'react-redux';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import React, { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
+import { Button, Label, TextInput } from "flowbite-react";
+import { useSelector } from "react-redux";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const MemberView = () => {
   const { userId } = useParams();
@@ -30,8 +30,8 @@ const MemberView = () => {
   }, [userId]);
 
   const generateUserReport = () => {
-    html2canvas(componentRef.current).then(canvas => {
-      const imgData = canvas.toDataURL('image/jpeg'); // Default to JPEG
+    html2canvas(componentRef.current).then((canvas) => {
+      const imgData = canvas.toDataURL("image/jpeg"); // Default to JPEG
 
       // Adjust image properties
       const pdf = new jsPDF();
@@ -39,98 +39,100 @@ const MemberView = () => {
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
       // Add image to PDF
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save('user_report.pdf');
+      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save("user_report.pdf");
     });
   };
 
   const navigateToDashboard = () => {
-    window.location.href = '/dashboard?tab=users'; // Navigate using window.location.href
+    window.location.href = "/dashboard?tab=users"; // Navigate using window.location.href
   };
 
   return (
     <>
-    <div className="h-full bg-[#1f1f1f] dark:bg-gray-900">
-      <div className="mx-auto" style={{ height: '700px' }}>
-        <div className="flex justify-center h-full px-6 py-12">
-          <div className="flex w-full h-full xl:w-3/4 lg:w-11/12">
-            <div className="hidden bg-gray-400 rounded-l-lg dark:bg-gray-800 lg:block lg:w-5/12" style={{ backgroundImage: `url(${user && user.profilePicture})`, backgroundSize: 'cover', width: '200px', height: '200px' }}>
-            </div>
+      <div className="h-full bg-[#1f1f1f] dark:bg-gray-900">
+        <div className="mx-auto" style={{ height: "700px" }}>
+          <div className="flex justify-center h-full px-6 py-12">
+            <div className="flex w-full h-full xl:w-3/4 lg:w-11/12">
+              <div
+                className="hidden bg-gray-400 rounded-l-lg dark:bg-gray-800 lg:block lg:w-5/12"
+                style={{
+                  backgroundImage: `url(${
+                    user &&
+                    user.profilePicture &&
+                    user.profilePicture.startsWith("http")
+                      ? user.profilePicture
+                      : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  })`,
+                  backgroundSize: "cover",
+                  width: "200px",
+                  height: "200px",
+                }}
+              ></div>
 
-            <div className="w-full p-5 bg-white rounded-lg lg:w-7/12 dark:bg-black lg:rounded-l-none" ref={componentRef}>
-              <div className="text-black">
-                <div className='text-center'> Member Information </div>
-                {user ? (
-                  <div>
-                    <Label>Name:</Label>
-                    <TextInput
-                      type="text"
-                      value={user.name}
-                      readOnly
-                    />
+              <div
+                className="w-full p-5 bg-white rounded-lg lg:w-7/12 dark:bg-black lg:rounded-l-none"
+                ref={componentRef}
+              >
+                <div className="text-black">
+                  <div className="text-center"> Member Information </div>
+                  {user ? (
+                    <div>
+                      <Label>Name:</Label>
+                      <TextInput type="text" value={user.name} readOnly />
 
-                    <Label>Username:</Label>
-                    <TextInput
-                      type="text"
-                      value={user.username}
-                      readOnly
-                    />
+                      <Label>Username:</Label>
+                      <TextInput type="text" value={user.username} readOnly />
 
-                    <Label>Email:</Label>
-                    <TextInput
-                      type="email"
-                      value={user.email}
-                      readOnly
-                      className="info-box"
-                    />
+                      <Label>Email:</Label>
+                      <TextInput
+                        type="email"
+                        value={user.email}
+                        readOnly
+                        className="info-box"
+                      />
 
-                    <Label>Contact Number:</Label>
-                    <TextInput
-                      type="text"
-                      value={user.contactNumber}
-                      readOnly
-                    />
+                      <Label>Contact Number:</Label>
+                      <TextInput
+                        type="text"
+                        value={user.contactNumber}
+                        readOnly
+                      />
 
-                    <Label>Address:</Label>
-                    <TextInput
-                      type="text"
-                      value={user.address}
-                      readOnly
-                    />
+                      <Label>Address:</Label>
+                      <TextInput type="text" value={user.address} readOnly />
 
-                    <Label>Date Of Birth:</Label>
-                    <TextInput
-                      type="text"
-                      value={user.dateOfBirth && new Date(user.dateOfBirth).toISOString().split('T')[0]}
-                      readOnly
-                    />
+                      <Label>Date Of Birth:</Label>
+                      <TextInput
+                        type="text"
+                        value={
+                          user.dateOfBirth &&
+                          new Date(user.dateOfBirth).toISOString().split("T")[0]
+                        }
+                        readOnly
+                      />
 
-                    <Label>Gender:</Label>
-                    <TextInput
-                      type="text"
-                      value={user.gender}
-                      readOnly
-                    />
-                  
-                    {/* <div className="flex justify-center mt-4">
+                      <Label>Gender:</Label>
+                      <TextInput type="text" value={user.gender} readOnly />
+
+                      {/* <div className="flex justify-center mt-4">
                       <Button onClick={generateUserReport}>Generate User Report</Button>
                     </div> */}
 
-                    <div className="flex justify-center mt-4 ">
-                      <Button onClick={navigateToDashboard}>Back</Button> {/* Modify Back button */}
+                      <div className="flex justify-center mt-4 ">
+                        <Button onClick={navigateToDashboard}>Back</Button>{" "}
+                        {/* Modify Back button */}
+                      </div>
                     </div>
-
-
-                  </div>
-                ) : (
-                  <p>Loading...</p>
-                )}
+                  ) : (
+                    <p>Loading...</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </>
   );
 };

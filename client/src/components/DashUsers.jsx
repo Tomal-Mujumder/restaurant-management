@@ -168,9 +168,18 @@ export default function DashUsers() {
                   </td>
                   <td className="px-6 py-4">
                     <img
-                      src={user.profilePicture}
+                      src={
+                        user.profilePicture &&
+                        user.profilePicture.startsWith("http")
+                          ? user.profilePicture
+                          : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                      }
                       alt={user.username}
                       className="object-cover w-10 h-10 bg-gray-500 rounded-full"
+                      onError={(e) => {
+                        e.target.src =
+                          "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+                      }}
                     />
                   </td>
                   <td className="px-6 py-4">{user.username}</td>

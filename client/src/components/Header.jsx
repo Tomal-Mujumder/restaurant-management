@@ -162,9 +162,18 @@ export default function Header() {
             label={
               currentUser ? (
                 <img
-                  src={currentUser.profilePicture}
+                  src={
+                    currentUser.profilePicture &&
+                    currentUser.profilePicture.startsWith("http")
+                      ? currentUser.profilePicture
+                      : "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                  }
                   alt="user"
                   className="w-8 h-8 rounded-full border-2 border-white object-cover"
+                  onError={(e) => {
+                    e.target.src =
+                      "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+                  }}
                 />
               ) : (
                 <FaUser className="w-6 h-6 text-white hover:text-gray-200" />
