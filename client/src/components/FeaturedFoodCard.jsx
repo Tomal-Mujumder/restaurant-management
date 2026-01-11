@@ -61,16 +61,30 @@ export default function FeaturedFoodCard({ food }) {
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="text-[#e93b92] font-bold text-lg">
-            {formatCurrencyWithCode(food.price)}
+          <div className="flex flex-col">
+            {food.discount > 0 && (
+              <span className="text-xs text-gray-400 line-through">
+                {formatCurrencyWithCode(food.oldPrice || food.price * 1.3)}
+              </span>
+            )}
+            <div className="text-[#e93b92] font-bold text-lg">
+              {formatCurrencyWithCode(food.price)}
+            </div>
           </div>
 
-          <Link
-            to={`/item/${food._id}`}
-            className="flex items-center gap-2 text-sm font-semibold text-gray-700 transition-all group-hover:text-[#e93b92] group-hover:translate-x-1"
-          >
-            Details <HiOutlineArrowRight />
-          </Link>
+          <div className="flex flex-col items-end gap-2">
+            {food.discount > 0 && (
+              <span className="px-2 py-0.5 text-[10px] font-bold text-white bg-red-500 rounded-full shadow-sm">
+                {food.discount}% OFF
+              </span>
+            )}
+            <Link
+              to={`/item/${food._id}`}
+              className="flex items-center gap-2 text-sm font-semibold text-gray-700 transition-all group-hover:text-[#e93b92] group-hover:translate-x-1"
+            >
+              Details <HiOutlineArrowRight />
+            </Link>
+          </div>
         </div>
       </div>
     </div>

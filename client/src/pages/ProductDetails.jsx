@@ -396,7 +396,8 @@ export default function ProductDetails() {
       ? foodItem.images
       : [foodItem.image];
   const originalPrice = foodItem.price;
-  const oldPrice = originalPrice * 1.3;
+  const oldPrice = foodItem.oldPrice || originalPrice * 1.3;
+  const discount = foodItem.discount || 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -481,6 +482,11 @@ export default function ProductDetails() {
             <span className="text-3xl font-bold text-red-500">
               {formatCurrencyWithCode(originalPrice)}
             </span>
+            {discount > 0 && (
+              <span className="ml-2 px-2 py-1 bg-red-100 text-red-600 text-sm font-bold rounded-md">
+                {discount}% OFF
+              </span>
+            )}
           </div>
 
           <div className="flex flex-col gap-1 text-sm text-gray-600">

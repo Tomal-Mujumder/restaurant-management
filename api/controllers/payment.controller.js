@@ -15,11 +15,13 @@ export const savePayment = async (req, res, next) => {
     paymentInfo,
     tokenNumber,
     shipmentData,
+    transactionId,
   } = req.body;
 
   try {
     const payment = new Payment({
       userId,
+      transactionId, // Save transaction ID
       cartItems,
       totalPrice,
       paymentInfo: {

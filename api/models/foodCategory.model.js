@@ -34,6 +34,13 @@ const foodCategorySchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  oldPrice: {
+    type: Number,
+  },
+  discount: {
+    type: Number,
+    default: 0,
+  },
 
   images: {
     type: [String],

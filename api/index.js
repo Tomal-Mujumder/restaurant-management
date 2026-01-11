@@ -25,8 +25,6 @@ import analyticsRoutes from "./routes/analytics.routes.js";
 
 // import shippingRoutes from "./routes/shipping.routes.js";
 
-
-
 dotenv.config();
 
 mongoose
@@ -40,15 +38,12 @@ mongoose
 
 const app = express();
 
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.listen(3000, () => {
-  console.log("Server is running on port 3000!!");
+  console.log("Server is running on port 3000!");
 });
 
 app.use("/api/user", userRoutes);

@@ -16,6 +16,10 @@ export default function Item() {
   const [error, setError] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(15);
+
   // Open sidebar by default on large screens
   useEffect(() => {
     const handleResize = () => {
@@ -40,6 +44,11 @@ export default function Item() {
     category: "All",
     priceRange: [0, 5000], // Default range, will be updated after data load
   });
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   const navigate = useNavigate();
 
@@ -209,6 +218,95 @@ export default function Item() {
     });
   }, [foodItems, filters]);
 
+  // Pagination Logic
+  const totalItems = filteredItems.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = useMemo(() => {
+    return filteredItems.slice(indexOfFirstItem, indexOfLastItem);
+  }, [filteredItems, indexOfFirstItem, indexOfLastItem]);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const renderPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    if (startPage > 1) {
+      pages.push(
+        <button
+          key={1}
+          onClick={() => handlePageChange(1)}
+          className={`px-3 py-1 mx-1 rounded-md transition-all ${
+            currentPage === 1
+              ? "bg-blue-600 text-white shadow-md"
+              : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+          }`}
+        >
+          1
+        </button>
+      );
+      if (startPage > 2) {
+        pages.push(
+          <span key="dots-start" className="px-2 text-gray-500">
+            ...
+          </span>
+        );
+      }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`px-3 py-1 mx-1 rounded-md transition-all ${
+            currentPage === i
+              ? "bg-blue-600 text-white shadow-md"
+              : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pages.push(
+          <span key="dots-end" className="px-2 text-gray-500">
+            ...
+          </span>
+        );
+      }
+      pages.push(
+        <button
+          key={totalPages}
+          onClick={() => handlePageChange(totalPages)}
+          className={`px-3 py-1 mx-1 rounded-md transition-all ${
+            currentPage === totalPages
+              ? "bg-blue-600 text-white shadow-md"
+              : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+          }`}
+        >
+          {totalPages}
+        </button>
+      );
+    }
+
+    return pages;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top Bar */}
@@ -292,11 +390,57 @@ export default function Item() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-              {filteredItems.map((item) => (
-                <FeaturedFoodCard key={item._id} food={item} />
-              ))}
-            </div>
+            <>
+              <div className="flex justify-between items-center mb-6">
+                <p className="text-sm text-gray-600">
+                  Showing{" "}
+                  <span className="font-semibold">
+                    {Math.min(indexOfFirstItem + 1, totalItems)}
+                  </span>{" "}
+                  to{" "}
+                  <span className="font-semibold">
+                    {Math.min(indexOfLastItem, totalItems)}
+                  </span>{" "}
+                  of <span className="font-semibold">{totalItems}</span> items
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+                {currentItems.map((item) => (
+                  <FeaturedFoodCard key={item._id} food={item} />
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <div className="flex items-center">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 bg-white text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm font-medium mr-2"
+                    >
+                      Previous
+                    </button>
+
+                    <div className="flex items-center">
+                      {renderPageNumbers()}
+                    </div>
+
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-4 py-2 bg-white text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm font-medium ml-2"
+                    >
+                      Next
+                    </button>
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Page {currentPage} of {totalPages}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>

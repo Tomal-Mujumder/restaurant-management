@@ -13,6 +13,7 @@ export default function FoodCategoryForm() {
     description: "",
     category: "Breakfast",
     price: "",
+    discount: 0,
     images: [],
   });
 
@@ -161,12 +162,28 @@ export default function FoodCategoryForm() {
     }
 
     try {
+      const discount = parseFloat(formData.discount) || 0;
+      const price = parseFloat(formData.price);
+      let oldPrice;
+
+      if (discount > 0) {
+        oldPrice = price / (1 - discount / 100);
+      } else {
+        oldPrice = price * 1.3;
+      }
+
+      const finalFormData = {
+        ...formData,
+        oldPrice: parseFloat(oldPrice.toFixed(2)),
+        discount: discount,
+      };
+
       const response = await fetch("/api/foods/createFood", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(finalFormData),
       });
 
       if (response.ok) {
@@ -184,6 +201,7 @@ export default function FoodCategoryForm() {
           description: "",
           category: "Breakfast",
           price: "",
+          discount: 0,
           images: [],
         });
         setUploadProgress(0);
@@ -287,6 +305,20 @@ export default function FoodCategoryForm() {
                   placeholder={`Enter price in ${currencyConfig.code}`}
                   className="w-full h-10 px-4 mt-1 border rounded bg-gray-50"
                   required
+                />
+              </div>
+
+              <div className="md:col-span-1">
+                <label htmlFor="discount">Discount (%)</label>
+                <input
+                  type="number"
+                  name="discount"
+                  value={formData.discount}
+                  onChange={handleChange}
+                  placeholder="0"
+                  min="0"
+                  max="100"
+                  className="w-full h-10 px-4 mt-1 border rounded bg-gray-50"
                 />
               </div>
 

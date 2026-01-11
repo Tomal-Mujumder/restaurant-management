@@ -59,6 +59,7 @@ const PayNow = () => {
         securityCode: e.target.securityCode.value,
       },
       tokenNumber,
+      transactionId: `BH${Date.now()}${userId.substring(0, 4)}`, // Generate transaction ID for manual payment
     };
 
     try {

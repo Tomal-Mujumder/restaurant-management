@@ -27,6 +27,7 @@ export const initPayment = async (req, res, next) => {
     // This allows the session to persist even if the server restarts
     const newPayment = new Payment({
       userId,
+      transactionId, // Save unique transaction ID
       cartItems,
       totalPrice, // Save directly in BDT (no conversion needed as per requirement)
       paymentInfo: {

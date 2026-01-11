@@ -8,6 +8,10 @@ const paymentSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    transactionId: {
+      type: String,
+      unique: true,
+    },
     cartItems: [
       {
         foodName: String,

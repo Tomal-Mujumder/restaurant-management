@@ -188,6 +188,12 @@ export default function UserOrders() {
                         {order.tokenNumber}
                       </span>
                     </p>
+                    <p>
+                      <span className="font-medium">Transaction ID:</span>{" "}
+                      <span className="font-mono text-xs">
+                        {order.transactionId || order.paymentInfo?.cardNumber}
+                      </span>
+                    </p>
                   </div>
                 </div>
 
@@ -386,6 +392,15 @@ export default function UserOrders() {
                   </p>
                   <p className="font-bold text-blue-600 dark:text-blue-400 text-xl">
                     {selectedOrder.tokenNumber}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Transaction ID
+                  </p>
+                  <p className="font-mono text-sm">
+                    {selectedOrder.transactionId ||
+                      selectedOrder.paymentInfo?.cardNumber}
                   </p>
                 </div>
                 <div>

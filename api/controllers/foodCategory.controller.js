@@ -28,7 +28,16 @@ export const createFoodItem = async (req, res, next) => {
       );
     }
 
-    const { foodId, foodName, description, category, price, images } = req.body;
+    const {
+      foodId,
+      foodName,
+      description,
+      category,
+      price,
+      oldPrice,
+      discount,
+      images,
+    } = req.body;
 
     if (!foodId || foodId.trim() === "") {
       return next(new Error("Food ID is required"));
@@ -44,6 +53,8 @@ export const createFoodItem = async (req, res, next) => {
       description,
       category,
       price,
+      oldPrice,
+      discount,
       images,
     });
 
@@ -131,7 +142,16 @@ export const updateFoodItem = async (req, res, next) => {
       );
     }
 
-    const { foodId, foodName, description, category, price, images } = req.body;
+    const {
+      foodId,
+      foodName,
+      description,
+      category,
+      price,
+      oldPrice,
+      discount,
+      images,
+    } = req.body;
 
     const oldFoodItem = await FoodItem.findById(req.params.itemId);
     if (!oldFoodItem) {
@@ -161,6 +181,8 @@ export const updateFoodItem = async (req, res, next) => {
           description,
           category,
           price,
+          oldPrice,
+          discount,
           images,
         },
       },
