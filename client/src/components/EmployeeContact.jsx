@@ -59,7 +59,7 @@ export default function EmployeeContact({ employee }) {
           <Link
             to={`mailto:${employeeDetails.email}?subject=
             &body=${message}`}
-            className="bg-[#707070] text-white text-center p-3 rounded-lg uppercase hover:opacity-100 mt-1"
+            className="bg-slate-700 text-white text-center p-3 rounded-lg uppercase hover:bg-slate-800 transition-colors shadow-sm mt-1"
           >
             Send Message
           </Link>
