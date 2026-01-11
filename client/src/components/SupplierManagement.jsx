@@ -1167,7 +1167,7 @@ export default function SupplierManagement() {
         onClose={() => setShowPODetailsModal(false)}
       >
         <Modal.Header>Purchase Order Details</Modal.Header>
-        <Modal.Body>
+        <Modal.Body id="purchase-order-print">
           {selectedPO && (
             <div className="space-y-4">
               {/* Order Header */}

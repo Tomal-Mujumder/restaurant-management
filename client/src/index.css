@@ -122,3 +122,67 @@ body {
     display: block !important;
   }
 }
+
+/* Print Styles for Purchase Order Modal */
+@media print {
+  /* Hide everything first */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show ONLY the purchase order modal content */
+  #purchase-order-print,
+  #purchase-order-print * {
+    visibility: visible !important;
+  }
+
+  /* Position the printable content */
+  #purchase-order-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+  }
+
+  /* Hide all buttons when printing */
+  button {
+    display: none !important;
+  }
+
+  /* Clean white background */
+  body {
+    background: white !important;
+  }
+
+  /* Make all text black for printing */
+  * {
+    color: black !important;
+  }
+
+  /* Preserve background colors for status badges */
+  .bg-green-100,
+  .bg-purple-100,
+  .bg-blue-100,
+  .bg-yellow-100,
+  .bg-red-100,
+  .bg-gray-50 {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Ensure table borders are visible */
+  .border {
+    border: 1px solid #000 !important;
+  }
+
+  /* Proper table printing */
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+}
