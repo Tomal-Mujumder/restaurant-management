@@ -37,6 +37,16 @@ const OrderDetailsModal = ({ order, isOpen, onClose }) => {
 
         {/* Printable Content Area */}
         <div ref={contentRef} className="p-4 print-container">
+          {/* Restaurant Header - Visible during print only */}
+          <div className="hidden print-header text-center mb-8 border-b-2 border-gray-100 pb-4">
+            <h1 className="text-4xl font-black text-gray-900 tracking-tight">
+              Banglar Heshel Restaurant
+            </h1>
+            <p className="text-gray-500 text-sm mt-1 uppercase tracking-widest font-semibold">
+              Quality Food & Traditional Taste
+            </p>
+          </div>
+
           {/* Header Section */}
           <div className="flex justify-between items-start mb-8">
             <div>
@@ -218,7 +228,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose }) => {
               width: 100%;
               padding: 20px;
             }
-            .print-footer {
+            .print-header, .print-footer {
                display: block !important;
             }
           }
