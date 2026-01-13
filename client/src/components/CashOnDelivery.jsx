@@ -10,6 +10,7 @@ import {
   FaMapMarkerAlt,
   FaPhone,
   FaUser,
+  FaInfoCircle,
 } from "react-icons/fa";
 
 const CashOnDelivery = () => {
@@ -140,6 +141,27 @@ const CashOnDelivery = () => {
           </div>
 
           <div className="p-8">
+            {/* Delivery Charge Alert */}
+            <div className="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
+              <div className="flex items-start">
+                <FaInfoCircle className="text-yellow-600 text-xl mr-3 mt-1" />
+                <div>
+                  <h3 className="text-lg font-bold text-yellow-800 mb-2">
+                    Delivery Charges
+                  </h3>
+                  <p className="text-yellow-700">
+                    • Inside Dhaka City:{" "}
+                    <span className="font-semibold">80 BDT</span>
+                    <br />• Outside Dhaka City:{" "}
+                    <span className="font-semibold">120 BDT</span>
+                  </p>
+                  <p className="text-sm text-yellow-600 mt-2">
+                    Delivery charges will be added to your total amount and
+                    collected upon delivery.
+                  </p>
+                </div>
+              </div>
+            </div>
             {/* Shipment Summary */}
             <div className="mb-8 bg-gray-50 rounded-xl p-6 border border-gray-100">
               <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center gap-2">

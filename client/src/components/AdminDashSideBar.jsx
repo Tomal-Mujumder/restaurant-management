@@ -5,6 +5,7 @@ import {
   HiChartBar,
   HiCube,
   HiTruck,
+  HiShoppingBag,
 } from "react-icons/hi";
 import {
   MdDashboard,
@@ -206,6 +207,16 @@ export default function AdminDashSideBar() {
               </div>
             </Link>
             {/* <Route path="/payment-manager" element={<PaymentManager />} /> */}
+            <Link to="/admin-dashboard?tab=orders">
+              <div
+                className={`p-2.5 my-2 mx-2 flex items-center rounded-md px-4 duration-300 cursor-pointer hover:bg-[#707070] text-white ${
+                  activeTab === "orders" ? "bg-[#707070]" : ""
+                }`}
+              >
+                <HiShoppingBag color="#D4D4D4" />
+                <span className="text-[15px] ml-4 text-[#D4D4D4]">Orders</span>
+              </div>
+            </Link>
 
             <Link to="/admin-dashboard?tab=admin-users">
               <div

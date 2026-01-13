@@ -15,6 +15,7 @@ import ReservationManager from "../components/ReservationManager.jsx";
 import StockManagement from "../components/StockManagement.jsx";
 import AnalyticsDashboard from "../components/AnalyticsDashboard.jsx";
 import SupplierManagement from "../components/SupplierManagement.jsx";
+import OrdersManagement from "../components/OrdersManagement.jsx";
 
 export default function AdminDashboard() {
   const location = useLocation();
@@ -66,6 +67,7 @@ export default function AdminDashboard() {
           {tab === "stock-management" && <StockManagement />}
           {tab === "analytics-dashboard" && <AnalyticsDashboard />}
           {tab === "supplier-management" && <SupplierManagement />}
+          {tab === "orders" && <OrdersManagement />}
         </div>
       </div>
     </>
