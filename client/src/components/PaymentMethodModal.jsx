@@ -1,7 +1,18 @@
 import React from "react";
-import { FaCreditCard, FaShieldAlt, FaTimes } from "react-icons/fa";
+import {
+  FaCreditCard,
+  FaShieldAlt,
+  FaTimes,
+  FaMoneyBillWave,
+} from "react-icons/fa";
 
-const PaymentMethodModal = ({ isOpen, onClose, onSelectMethod, cartItems, totalPrice }) => {
+const PaymentMethodModal = ({
+  isOpen,
+  onClose,
+  onSelectMethod,
+  cartItems,
+  totalPrice,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -20,18 +31,22 @@ const PaymentMethodModal = ({ isOpen, onClose, onSelectMethod, cartItems, totalP
         </h2>
 
         <div className="space-y-4">
-          {/* Manual Payment Option */}
+          {/* Cash on Delivery Option */}
           <div
-            onClick={() => onSelectMethod("manual")}
+            onClick={() => onSelectMethod("cod")}
             className="group relative p-4 border border-gray-600 rounded-xl cursor-pointer hover:border-[#AC5180] transition-all duration-300 hover:bg-[#2a2a2a]"
           >
             <div className="flex items-center gap-4">
               <div className="p-3 bg-[#AC5180]/30 rounded-full text-[#AC5180] group-hover:bg-[#AC5180] group-hover:text-white transition-colors">
-                <FaCreditCard size={24} />
+                <FaMoneyBillWave size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">Manual Payment</h3>
-                <p className="text-sm text-gray-400">Enter card details securely</p>
+                <h3 className="text-lg font-semibold text-white">
+                  Cash on Delivery
+                </h3>
+                <p className="text-sm text-gray-400">
+                  Pay when you receive your order
+                </p>
               </div>
             </div>
           </div>
@@ -41,25 +56,30 @@ const PaymentMethodModal = ({ isOpen, onClose, onSelectMethod, cartItems, totalP
             onClick={() => onSelectMethod("sslcommerz")}
             className="group relative p-4 border border-gray-600 rounded-xl cursor-pointer hover:border-green-500 transition-all duration-300 hover:bg-[#2a2a2a]"
           >
-             {/* Recommended Badge */}
-             <div className="absolute top-0 right-0 px-3 py-1 text-xs font-bold text-white transform translate-x-2 -translate-y-2 bg-green-600 rounded-bl-lg rounded-tr-lg shadow-lg">
+            {/* Recommended Badge */}
+            <div className="absolute top-0 right-0 px-3 py-1 text-xs font-bold text-white transform translate-x-2 -translate-y-2 bg-green-600 rounded-bl-lg rounded-tr-lg shadow-lg">
               Recommended
             </div>
-            
+
             <div className="flex items-center gap-4">
               <div className="p-3 bg-green-900/30 rounded-full text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors">
                 <FaShieldAlt size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white">SSLCommerz Gateway</h3>
-                <p className="text-sm text-gray-400">Pay securely via SSLCommerz</p>
+                <h3 className="text-lg font-semibold text-white">
+                  SSLCommerz Gateway
+                </h3>
+                <p className="text-sm text-gray-400">
+                  Pay securely via SSLCommerz
+                </p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="mt-6 text-center text-xs text-gray-500">
-          Total Amount: <span className="text-white font-semibold">BDT {totalPrice}</span>
+          Total Amount:{" "}
+          <span className="text-white font-semibold">BDT {totalPrice}</span>
         </div>
       </div>
     </div>

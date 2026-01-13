@@ -326,8 +326,8 @@ const ShoppingCart = () => {
   const handlePaymentMethodSelect = async (method) => {
     setShowPaymentModal(false);
 
-    if (method === "manual") {
-      navigate("/checkout/payment", {
+    if (method === "cod") {
+      navigate("/checkout/cod", {
         state: { cartItems, totalPrice, userId, shipmentData },
       });
     } else if (method === "sslcommerz") {

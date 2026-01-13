@@ -21,7 +21,7 @@ import CartPage from "./pages/CartPage.jsx";
 // import ShippingPage from './pages/ShippingPage..jsx'
 // import PaymentSelection from './pages/PaymentSelect.jsx'
 // import PaymentSuccess from './pages/PaymentSuccess.jsx'
-import PayNow from "./components/PayNow.jsx";
+import CashOnDelivery from "./components/CashOnDelivery.jsx";
 import PaymentReceipt from "./pages/PaymentReceipt.jsx";
 import PaymentManager from "./components/PaymentManager.jsx";
 import VerifyOTP from "./pages/VerifyOTP.jsx";
@@ -59,7 +59,7 @@ export default function App() {
         <Route path="/payment-failed" element={<PaymentFailed />} />
         {/* <Route path="/payment-manager" element={<PaymentManager />} /> */}
 
-        <Route path="/Checkout/payment" element={<PayNow />} />
+        <Route path="/checkout/cod" element={<CashOnDelivery />} />
         {/* <Route path="/Checkout/payment" element={<PayNow />} /> */}
 
         {/* <Route path="/Checkout/payment/shipping" element={<ShippingPage />} />
