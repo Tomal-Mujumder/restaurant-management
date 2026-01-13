@@ -47,11 +47,13 @@ const OrdersManagement = () => {
 
   // Filter Logic
   const filteredOrders = orders.filter((order) => {
+    // Search filter
     const matchesSearch =
       order.tokenNumber?.toString().includes(searchQuery) ||
       order.userId?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.userId?.username?.toLowerCase().includes(searchQuery.toLowerCase());
 
+    // Status filter
     const matchesStatus =
       statusFilter === "All"
         ? true
@@ -59,14 +61,22 @@ const OrdersManagement = () => {
         ? order.isChecked
         : !order.isChecked;
 
-    const matchesMethod =
-      methodFilter === "All"
-        ? true
-        : order.paymentInfo?.cardType
-            ?.toLowerCase()
-            .includes(methodFilter.toLowerCase()); // Simple check, adapt if identifiers vary
+    // Payment method filter with flexible matching
+    let matchesPayment = true;
+    if (methodFilter !== "All") {
+      const paymentType = order.paymentInfo?.cardType?.toLowerCase() || "";
 
-    return matchesSearch && matchesStatus && matchesMethod;
+      if (methodFilter === "cod") {
+        // Match both "Cash on Delivery" and "COD"
+        matchesPayment = paymentType.includes("cash") || paymentType === "cod";
+      } else if (methodFilter === "sslcommerz") {
+        // Match "SSLCommerz", "Online", or anything containing "ssl"
+        matchesPayment =
+          paymentType.includes("ssl") || paymentType.includes("online");
+      }
+    }
+
+    return matchesSearch && matchesStatus && matchesPayment;
   });
 
   if (loading)
@@ -120,7 +130,7 @@ const OrdersManagement = () => {
             >
               <option value="All">All Methods</option>
               <option value="cod">Cash on Delivery</option>
-              <option value="sslcommerz">SSLCommerz</option>
+              <option value="sslcommerz">SSLCommerz/Online</option>
             </select>
           </div>
         </div>
@@ -168,14 +178,27 @@ const OrdersManagement = () => {
                     <td className="p-4">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          order.paymentInfo?.cardType === "Cash on Delivery"
+                          order.paymentInfo?.cardType
+                            ?.toLowerCase()
+                            .includes("cash") ||
+                          order.paymentInfo?.cardType?.toLowerCase() === "cod"
                             ? "bg-blue-100 text-blue-800"
                             : "bg-green-100 text-green-800"
                         }`}
                       >
-                        {order.paymentInfo?.cardType === "Cash on Delivery"
+                        {order.paymentInfo?.cardType
+                          ?.toLowerCase()
+                          .includes("cash") ||
+                        order.paymentInfo?.cardType?.toLowerCase() === "cod"
                           ? "COD"
-                          : "Online"}
+                          : order.paymentInfo?.cardType
+                              ?.toLowerCase()
+                              .includes("ssl") ||
+                            order.paymentInfo?.cardType
+                              ?.toLowerCase()
+                              .includes("online")
+                          ? "Online"
+                          : order.paymentInfo?.cardType || "N/A"}
                       </span>
                     </td>
                     <td className="p-4 font-bold text-gray-700">
