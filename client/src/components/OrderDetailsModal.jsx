@@ -4,10 +4,10 @@ import { useReactToPrint } from "react-to-print";
 import { formatCurrencyWithCode } from "../utils/currency";
 
 const OrderDetailsModal = ({ order, isOpen, onClose }) => {
-  const componentRef = useRef();
+  const contentRef = useRef(null);
 
   const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
+    contentRef,
     documentTitle: `Order_${order?.tokenNumber}`,
   });
 
@@ -36,7 +36,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose }) => {
         </div>
 
         {/* Printable Content Area */}
-        <div ref={componentRef} className="p-4 print-container">
+        <div ref={contentRef} className="p-4 print-container">
           {/* Header Section */}
           <div className="flex justify-between items-start mb-8">
             <div>
