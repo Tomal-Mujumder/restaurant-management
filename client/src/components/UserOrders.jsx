@@ -369,11 +369,14 @@ export default function UserOrders() {
               <div className="hidden print:block border-b-2 border-gray-200 pb-4 mb-6">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-800">
+                    <h1 className="text-2xl font-bold text-gray-900">
                       Order Invoice
                     </h1>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 font-semibold">
                       Banglar Heshel Restaurant
+                    </p>
+                    <p className="text-[10px] text-gray-400 italic mt-0.5">
+                      Quality Food & Traditional Taste
                     </p>
                   </div>
                   <div className="text-right">
