@@ -1,68 +1,142 @@
-<h1><center>🌟 Banglar Heshel - Restaurant Management System 🌟</center></h1>
-<br>
+# 🍽️ Banglar Heshel - Restaurant Management System
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![React](https://img.shields.io/badge/Frontend-React-blue.svg)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Backend-Node.js-green.svg)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/Database-MongoDB-brightgreen.svg)](https://www.mongodb.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC.svg)](https://tailwindcss.com/)
 
+**Banglar Heshel** is a state-of-the-art Restaurant Management System designed to streamline operations and enhance the customer dining experience. Built using the robust **MERN stack** (MongoDB, Express.js, React.js, Node.js), it offers a seamless interface for customers, managers, and administrators.
 
-<br> <p>**Banglar Heshel** is a restaurant management system built using the **MERN (MongoDB, Express.js, React.js, Node.js)** stack and styled with **Tailwind CSS**. This application provides a seamless experience for customers and management alike, supporting menu browsing, ordering, payments, and user management functionalities.</p>
-<h3>Features:</h3> <ul> <li>Browse Menu: View available food items and search for specific items.</li> <li>Ordering: Only registered users can order food items.</li> <li>Payment: Customers can make payments online and receive a unique token number.</li> <li>Token Pickup: Customers can also pay outside the app and use the token number for easy order collection.</li> </ul> <h4>Admin Features:</h4> <ul> <li>Add and manage managers.</li> <li>View and control registered users and their details.</li> </ul> <h4>Manager Features:</h4> <ul> <li>View and manage registered users' details.</li> <li>Add, modify, or remove menu items.</li> <li>View payment details.</li> </ul>
-<h3>Technologies:</h3> <ul> <li>Frontend: React.js, Tailwind CSS</li> <li>Backend: Node.js, Express.js</li> <li>Database: MongoDB</li> </ul>
-<h3>Project Structure:</h3>
-Backend
-lua
-Copy code
-backend/  
-  |-- controllers/  
-  |-- models/  
-  |-- routes/  
-  |-- .env  
-  |-- server.js  
-Frontend
-lua
-Copy code
-frontend/  
-  |-- src/  
-      |-- assets/  
-      |-- components/  
-      |-- pages/  
-  |-- .env  
-<h3>Usage:</h3> <p>Clone the repository, set up the backend and frontend, and run the application to use all features. Refer to the documentation for environment variables and installation steps.</p>
-<h3>ScreenShots:</h3> 
+---
 
-![Screenshot 2024-12-20 224253](https://github.com/user-attachments/assets/4857421c-a541-4032-a2d0-6346f4bb36b0)
+## ✨ Key Features
 
->  <br> 
+### 👤 Customer Experience
 
-![Screenshot 2024-12-20 224441](https://github.com/user-attachments/assets/1289fbed-ceed-49d0-a5f3-fc63e79c22e7)
+- **Menu Browsing & Search**: Explore delicious food items with detailed descriptions and categories.
+- **Wishlist & Cart**: Save your favorites and manage your orders easily.
+- **Table Reservation**: Book your spot in advance with ease.
+- **Secure Payments**: Integrated with **SSLCommerz** for online payments, plus Cash on Delivery options.
+- **Order Tracking**: Real-time updates on your order status and digital receipts.
+- **Reviews & Ratings**: Share your dining experience with the community.
 
+### 🛠️ Admin & Management
 
+- **Analytics Dashboard**: Visualized insights into sales, orders, and customer trends using **Recharts**.
+- **Inventory & Stock Management**: Real-time tracking of food stock with automated transaction logging.
+- **Supplier & Purchase Orders**: Manage suppliers and streamline the procurement process.
+- **Menu Management**: Effortlessly add, update, or remove food categories and items.
+- **Role-Based Access**: Specialized views and permissions for Admins and Managers.
 
-https://github.com/user-attachments/assets/6f0e6244-15fc-4bc8-b58d-49248d2b5cdd
+---
 
+## 🚀 Tech Stack
 
+- **Frontend**: React (Vite), Redux Toolkit, Tailwind CSS, Flowbite React.
+- **Backend**: Node.js, Express.js.
+- **Database**: MongoDB (Mongoose).
+- **Authentication**: Firebase Auth & Custom JWT implementation.
+- **File Storage**: Cloudinary for high-performance image management.
+- **Payment Gateway**: SSLCommerz Integration.
 
- </center>
+---
 
-<h3>Installation & Setup (Run on another machine):</h3>
-<ol>
-  <li><strong>Clone the repository</strong> and ensure you have Node.js installed.</li>
-  <li><strong>Backend Setup (.env):</strong>
-    <ul>
-      <li>Navigate to `api/` folder.</li>
-      <li>Create a file named `.env`.</li>
-      <li>Copy content from `.env.example` and fill in your MongoDB URI, JWT Secret, and Cloudinary credentials (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET).</li>
-      <li>Run `npm install` and `npm start`.</li>
-    </ul>
-  </li>
-  <li><strong>Frontend Setup (.env):</strong>
-    <ul>
-      <li>Navigate to `client/` folder.</li>
-      <li>Create a file named `.env`.</li>
-      <li>Copy content from `.env.example` and fill in your Firebase API Key.</li>
-      <li>Run `npm install` and `npm run dev`.</li>
-    </ul>
-  </li>
-  <li><strong>Images & Assets:</strong> All logos and images are typically stored in `client/src/assets` and are part of the repository, so they will move with the project.</li>
-</ol>
+## 📸 Screenshots & Demos
 
-<h3>License:</h3> <p>This project is licensed under the <strong>MIT License</strong>. See the <code>LICENSE</code> file for details.</p>
-# restaurant-management-system
+### Desktop Preview
+
+![Dashboard Preview](https://github.com/user-attachments/assets/4857421c-a541-4032-a2d0-6346f4bb36b0)
+
+### Mobile Responsive Design
+
+![Mobile Design](https://github.com/user-attachments/assets/1289fbed-ceed-49d0-a5f3-fc63e79c22e7)
+
+### 🎥 Video Demonstration
+
+Check out the full walkthrough [here](https://github.com/user-attachments/assets/6f0e6244-15fc-4bc8-b58d-49248d2b5cdd).
+
+---
+
+## ⚙️ Configuration
+
+Create a `.env` file in both `api/` and `client/` directories based on the following templates.
+
+### Backend (`api/.env`)
+
+```env
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+SSLCOMMERZ_STORE_ID=testbox
+SSLCOMMERZ_STORE_PASSWORD=qwerty
+SSLCOMMERZ_IS_LIVE=false
+SSLCOMMERZ_SUCCESS_URL=http://localhost:3000/api/sslcommerz/success
+SSLCOMMERZ_FAIL_URL=http://localhost:3000/api/sslcommerz/fail
+SSLCOMMERZ_CANCEL_URL=http://localhost:3000/api/sslcommerz/cancel
+SSLCOMMERZ_IPN_URL=http://localhost:3000/api/sslcommerz/ipn
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+### Frontend (`client/.env`)
+
+```env
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+```
+
+---
+
+## 🛠️ Installation & Setup
+
+1.  **Clone the Repository**:
+
+    ```bash
+    git clone https://github.com/Tomal-Mujumder/restaurant-management.git
+    cd restaurant-management
+    ```
+
+2.  **Backend Setup**:
+
+    ```bash
+    # From the root directory
+    npm install
+    npm run dev  # Starts node server with nodemon
+    ```
+
+3.  **Frontend Setup**:
+    ```bash
+    cd client
+    npm install
+    npm run dev  # Starts Vite development server
+    ```
+
+---
+
+## 🤝 Contributing
+
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📜 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+## 📫 Contact & Support
+
+**Tomal Mujumder** - [GitHub](https://github.com/Tomal-Mujumder)
+
+Project Link: [https://github.com/Tomal-Mujumder/restaurant-management](https://github.com/Tomal-Mujumder/restaurant-management)
+
+---
+
+<p align="center">Made with ❤️ for great food and better management.</p>
