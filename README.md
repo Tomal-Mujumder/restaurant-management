@@ -60,29 +60,33 @@ Check out the full walkthrough [here](https://github.com/user-attachments/assets
 
 ## ⚙️ Configuration
 
-Create a `.env` file in both `api/` and `client/` directories based on the following templates.
+The project uses environment variables for secure configuration. Create a `.env` file in the **root** directory of the project.
 
-### Backend (`api/.env`)
+### Root Configuration (`.env`)
 
 ```env
+# MongoDB Connection
 MONGO_URI=your_mongodb_connection_string
+
+# Authentication
 JWT_SECRET=your_jwt_secret
-SSLCOMMERZ_STORE_ID=testbox
-SSLCOMMERZ_STORE_PASSWORD=qwerty
-SSLCOMMERZ_IS_LIVE=false
-SSLCOMMERZ_SUCCESS_URL=http://localhost:3000/api/sslcommerz/success
-SSLCOMMERZ_FAIL_URL=http://localhost:3000/api/sslcommerz/fail
-SSLCOMMERZ_CANCEL_URL=http://localhost:3000/api/sslcommerz/cancel
-SSLCOMMERZ_IPN_URL=http://localhost:3000/api/sslcommerz/ipn
+
+# Firebase (Frontend)
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+
+# Payment Gateway (SSLCommerz)
+SSL_STORE_ID=your_store_id
+SSL_STORE_PASSWORD=your_store_password
+SSL_IS_LIVE=false
+
+# Cloudinary (Image Storage)
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
-```
 
-### Frontend (`client/.env`)
-
-```env
-VITE_FIREBASE_API_KEY=your_firebase_api_key
+# URLs
+FRONTEND_URL=http://localhost:5173
+BACKEND_URL=http://localhost:3000
 ```
 
 ---
