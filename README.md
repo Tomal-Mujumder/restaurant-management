@@ -44,13 +44,13 @@
 
 ## 📸 Screenshots & Demos
 
-### Desktop Preview
+### Home Page
 
-![Dashboard Preview](https://github.com/user-attachments/assets/4857421c-a541-4032-a2d0-6346f4bb36b0)
+![Home Page](screenshots/home_page.png)
 
-### Mobile Responsive Design
+### Analytics Dashboard
 
-![Mobile Design](https://github.com/user-attachments/assets/1289fbed-ceed-49d0-a5f3-fc63e79c22e7)
+![Analytics Dashboard](screenshots/analytics_dashboard.png)
 
 ### 🎥 Video Demonstration
 
