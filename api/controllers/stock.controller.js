@@ -1,6 +1,8 @@
 import Stock from "../models/stock.model.js";
+import FoodItem from "../models/foodCategory.model.js";
 import StockTransaction from "../models/stockTransaction.model.js";
 import { errorHandler } from "../utils/error.js";
+import { deleteImageFromCloudinary } from "../utils/cloudinaryHelper.js";
 
 // 1. Get all food items with their stock levels (populate foodId details)
 export const getAllStocks = async (req, res, next) => {
@@ -125,6 +127,47 @@ export const getLowStockItems = async (req, res, next) => {
     }).populate("foodId");
 
     res.status(200).json(lowStockItems);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 6. Delete stock record and associated food item
+export const deleteStock = async (req, res, next) => {
+  if (req.user.role !== "Manager" && !req.user.isAdmin) {
+    return next(errorHandler(403, "You are not allowed to delete stock"));
+  }
+
+  const { id } = req.params;
+
+  try {
+    const stock = await Stock.findById(id).populate("foodId");
+    if (!stock) {
+      return next(errorHandler(404, "Stock record not found"));
+    }
+
+    const foodItem = stock.foodId;
+
+    // Delete associated food item and its images if it exists
+    if (foodItem) {
+      if (foodItem.images && foodItem.images.length > 0) {
+        for (const imageUrl of foodItem.images) {
+          if (!imageUrl.includes("pinimg.com")) {
+            await deleteImageFromCloudinary(imageUrl);
+          }
+        }
+      }
+      await FoodItem.findByIdAndDelete(foodItem._id);
+      // Also delete related stock transactions
+      await StockTransaction.deleteMany({ foodId: foodItem._id });
+    }
+
+    // Delete the stock record itself
+    await Stock.findByIdAndDelete(id);
+
+    res.status(200).json({
+      message: "Stock record and associated food item deleted successfully",
+    });
   } catch (error) {
     next(error);
   }

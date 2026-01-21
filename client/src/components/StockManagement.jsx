@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
 import { formatCurrencyWithCode } from "../utils/currency";
-import { HiSearch, HiPencilAlt, HiCog } from "react-icons/hi";
+import { HiSearch, HiPencilAlt, HiCog, HiTrash } from "react-icons/hi";
 
 export default function StockManagement() {
   const [stocks, setStocks] = useState([]);
@@ -67,7 +67,7 @@ export default function StockManagement() {
       const filtered = stocks.filter((stock) =>
         stock.foodId?.foodName
           ?.toLowerCase()
-          .includes(searchQuery.toLowerCase())
+          .includes(searchQuery.toLowerCase()),
       );
       setFilteredStocks(filtered);
     } else {
@@ -139,7 +139,7 @@ export default function StockManagement() {
             quantity: newQuantity,
             reason: adjustFormData.reason || `Manual ${adjustFormData.type}`,
           }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -178,7 +178,7 @@ export default function StockManagement() {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify(thresholdFormData),
-        }
+        },
       );
 
       const data = await response.json();
@@ -192,6 +192,44 @@ export default function StockManagement() {
         setShowThresholdModal(false);
       } else {
         throw new Error(data.message);
+      }
+    } catch (error) {
+      Toastify({
+        text: error.message,
+        backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+        duration: 3000,
+      }).showToast();
+    }
+  };
+
+  // Handle Delete Stock
+  const handleDeleteStock = async (stockId) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this stock item and the associated food item? This action cannot be undone.",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/stock/delete/${stockId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        Toastify({
+          text: "Item deleted successfully!",
+          backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+          duration: 3000,
+        }).showToast();
+        fetchStocks(); // Refresh data
+      } else {
+        throw new Error(data.message || "Failed to delete item");
       }
     } catch (error) {
       Toastify({
@@ -324,6 +362,13 @@ export default function StockManagement() {
                     title="Set Thresholds"
                   >
                     <HiCog /> Set
+                  </button>
+                  <button
+                    onClick={() => handleDeleteStock(stock._id)}
+                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-red-600 bg-red-100 rounded-lg hover:bg-red-200"
+                    title="Delete Item"
+                  >
+                    <HiTrash /> Delete
                   </button>
                 </td>
               </tr>
